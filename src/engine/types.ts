@@ -75,7 +75,7 @@ export interface LightMask {
   pulse?: { amount: number; periodSeconds: number };
 }
 export interface SceneDefinition {
-  shutter?: { top:number; bottom:number; depth:number };
+  shutter?: { top:number; bottom:number; depth:number; texture?:TextureSource };
   width: number; height: number;
   layers?: ImageLayer[];
   lights?: LightMask[];

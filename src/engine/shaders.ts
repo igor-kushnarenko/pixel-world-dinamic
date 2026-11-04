@@ -266,6 +266,8 @@ void main(){
 }
 `;
 export const shutterFragment = common + /* glsl */`
+uniform sampler2D uSlatTexture;
+uniform float uHasSlatTexture,uSlatTop;
 uniform float uShutterEdge,uShutterClosed,uExteriorAmbient;
 uniform vec4 uInterior;
 void main(){
@@ -279,7 +281,9 @@ void main(){
   light+=vec3(0.16,0.09,0.04)*uInterior.y*max(0.0,1.0-length((p-vec2(1575.0,350.0))/vec2(500.0,350.0)));
   light+=vec3(0.015,0.04,0.05)*uInterior.w*max(0.0,1.0-length((p-vec2(470.0,740.0))/vec2(350.0,250.0)));
   light+=vec3(0.025,0.018,0.008)*uInterior.z*max(0.0,1.0-length((p-vec2(1340.0,740.0))/vec2(300.0,200.0)));
-  gl_FragColor=vec4(light*rib,windowAt(vUv));
+  vec3 metal=texture2D(uSlatTexture,vec2(clamp((p.x-235.0)/1342.0,0.0,1.0),1.0-fract((p.y-uSlatTop)/122.0))).rgb;
+  vec3 color=uHasSlatTexture>0.5?metal*(outside*4.0)+metal*light*3.0:light*rib;
+  gl_FragColor=vec4(color,windowAt(vUv));
 }
 `;
 export const outputFragment = /* glsl */`

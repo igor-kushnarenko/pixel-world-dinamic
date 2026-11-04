@@ -182,6 +182,9 @@ async function enter(sound: boolean) {
   document.body.classList.add('entered');
   $<HTMLButtonElement>('menu-toggle').disabled = false;
   for (const id of Object.keys(HOTSPOTS)) $<HTMLButtonElement>('hit-' + id).disabled = false;
+  for(const id of ['left','radio','computer']) $('hit-'+id).hidden=true;
+  for(const id of ['lamp-left','computer-toggle']){const button=$<HTMLButtonElement>(id);button.disabled=true;button.title='Предмет ещё не добавлен в новую комнату';}
+  settings.left=false;settings.computer=false;
   $('menu-toggle').focus(); syncUI(); wake();
 }
 function fitScene() {

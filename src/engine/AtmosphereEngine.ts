@@ -231,7 +231,7 @@ export class AtmosphereEngine {
       }
     }
     this.prepareAtmosphere(this.parameters);
-    if(scene.shutter)this.pass('shutter',shutterFragment,scene.shutter.depth,true,{uShutterEdge:{value:-1},uShutterClosed:{value:0},uExteriorAmbient:{value:0},uInterior:{value:new Vector4()}});
+    if(scene.shutter)this.pass('shutter',shutterFragment,scene.shutter.depth,true,{uSlatTexture:{value:scene.shutter.texture?await this.texture(scene.shutter.texture):this.windowTexture},uHasSlatTexture:{value:scene.shutter.texture?1:0},uSlatTop:{value:scene.shutter.top},uShutterEdge:{value:-1},uShutterClosed:{value:0},uExteriorAmbient:{value:0},uInterior:{value:new Vector4()}});
   }
 
   private prepareAtmosphere(p: AtmosphereParameters) {
