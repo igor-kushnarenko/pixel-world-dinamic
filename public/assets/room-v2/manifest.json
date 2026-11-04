@@ -4,7 +4,7 @@
     1672,
     941
   ],
-  "status": "originals-imported-requires-preparation",
+  "status": "prepared-for-integration",
   "files": [
     {
       "file": "originals/room-base.png",
@@ -136,11 +136,12 @@
     }
   ],
   "notes": [
-    "Room base and assembly reference have opaque white windows. A separate technical window mask and render-time cutout are required.",
+    "Transparent prepared base and binary window mask available; originals remain untouched.",
     "Use foreground before placing objects only after checking that front edges are not duplicated in base.",
-    "Housing source and assembled reference differ in geometry; do not automatically stretch or shift architecture.",
-    "Slat texture is not scene-sized and contains transparent padding. It requires a crop/repeat region before use.",
+    "Prepared housing uses unscaled patches; coordinates documented in preparation.json.",
+    "Prepared opaque slat tile has a 122px vertical repeat and matched seam rows.",
     "RGB light mask is valid as an intensity mask; black is not alpha.",
     "Reference assembly is not an additional room layer."
-  ]
+  ],
+  "preparation": "preparation.json"
 }

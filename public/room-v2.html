@@ -1,0 +1,22 @@
+<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Новая комната · ПИКСЕЛЬНЫЙ МИР</title>
+<style>body{margin:0;background:#080f18;color:#c9dce6;font:16px system-ui}main{max-width:1672px;margin:auto}header{padding:16px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}a{color:#98cde7}canvas{width:100%;height:auto;display:block;image-rendering:pixelated}p{padding:0 16px;color:#91a7b7}input{vertical-align:middle}#error{color:#ffa590}</style>
+<main><header><b>Новая комната · проверка слоёв</b><label>Роллет <input id="shutter" type="range" min="0" max="100" value="50"><output id="amount">50%</output></label><label><input id="grid" type="checkbox">Контрастная подложка</label><a href="./">К панораме</a></header><canvas width="1672" height="941" aria-label="Сборка новой комнаты"></canvas><p>Проём, корпус и ламели подготовлены. Это отдельный предпросмотр; предметы и взаимодействия появятся на следующем этапе.</p><p id="error" role="alert"></p></main>
+<script type="module">
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+const load=async name=>{const im=new Image();im.src='assets/room-v2/'+name;await im.decode();return im};
+try{
+const config=await fetch('assets/room-v2/preparation.json').then(r=>{if(!r.ok)throw Error(r.status);return r.json()});
+const [base,housing,tile]=await Promise.all(['room-base','shutter-housing','shutter-tile'].map(n=>load(config.files[n])));
+const slider=document.querySelector('#shutter'),grid=document.querySelector('#grid');
+function draw(){
+ctx.clearRect(0,0,1672,941);
+if(grid.checked){for(let y=0;y<941;y+=32)for(let x=0;x<1672;x+=32){ctx.fillStyle=(x/32+y/32)%2?'#decee8':'#547791';ctx.fillRect(x,y,32,32)}}
+else{const sky=ctx.createLinearGradient(0,115,0,746);sky.addColorStop(0,'#0d172e');sky.addColorStop(1,'#60758a');ctx.fillStyle=sky;ctx.fillRect(0,0,1672,941);for(let x=240;x<1580;x+=43){const h=80+((x*17)%220);ctx.fillStyle='#25364a';ctx.fillRect(x,746-h,34,h);ctx.fillStyle='#d8ad63';for(let y=760-h;y<740;y+=22)ctx.fillRect(x+10,y,3,4)}}
+const [left,top,right,bottom]=config.aperture,width=right-left,height=bottom-top;
+ctx.save();ctx.beginPath();ctx.rect(left,top,width,Math.round(height*slider.value/100));ctx.clip();
+for(let y=top;y<bottom;y+=tile.height)ctx.drawImage(tile,0,0,tile.width,tile.height,left,y,width,tile.height);
+ctx.restore();ctx.drawImage(base,0,0);ctx.drawImage(housing,0,0);document.querySelector('#amount').value=slider.value+'%';
+}
+slider.addEventListener('input',draw);grid.addEventListener('change',draw);draw();window.roomV2Ready=true;
+}catch(error){document.querySelector('#error').textContent='Не удалось загрузить слои: '+error.message;throw error}
+</script></html>

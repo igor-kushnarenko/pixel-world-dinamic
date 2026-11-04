@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "sceneSize": [
+    1672,
+    941
+  ],
+  "aperture": [
+    235,
+    115,
+    1577,
+    746
+  ],
+  "boundsConvention": "left,top,right,bottom exclusive; native scene pixels",
+  "housingPatches": [
+    [
+      [
+        147,
+        31,
+        198,
+        118
+      ],
+      [
+        195,
+        31,
+        246,
+        118
+      ]
+    ],
+    [
+      [
+        246,
+        31,
+        1630,
+        118
+      ],
+      [
+        246,
+        31,
+        1630,
+        118
+      ]
+    ]
+  ],
+  "slatSourceCrop": [
+    32,
+    340,
+    1090,
+    462
+  ],
+  "slatPeriod": 122,
+  "slatRepeat": "vertical; horizontal nearest fit to aperture; endpoint row equals first row",
+  "drawOrder": [
+    "exterior",
+    "shutter clipped to window-mask",
+    "room-base",
+    "movable objects",
+    "foreground",
+    "shutter-housing"
+  ],
+  "files": {
+    "room-base": "prepared/room-base.png",
+    "window-mask": "prepared/window-mask.png",
+    "shutter-housing": "prepared/shutter-housing.png",
+    "shutter-tile": "prepared/shutter-tile.png"
+  }
+}
