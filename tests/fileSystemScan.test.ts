@@ -1,0 +1,5 @@
+import {it,expect} from 'vitest';
+import {mkdtempSync,mkdirSync,writeFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';import {join} from 'node:path';
+import {scanFileSystem} from '../tools/file-system-plugin.mjs';
+it('indexes nested files, empty folders and encoded names with exact bytes',()=>{const dir=mkdtempSync(join(tmpdir(),'pixel-files-'));try{mkdirSync(join(dir,'Пустая'));writeFileSync(join(dir,'Пустая','.gitkeep'),'');mkdirSync(join(dir,'Фото'));const bytes=Buffer.from([0,1,250,255]);writeFileSync(join(dir,'Фото','кадр #1%.png'),bytes);writeFileSync(join(dir,'index.json'),'user file');const tree=scanFileSystem(dir);expect(tree.root.children.find((x:any)=>x.name==='Пустая').children).toEqual([]);expect(tree.files.find((x:any)=>x.name.endsWith('.png')).content).toEqual(bytes);expect(tree.root.children.find((x:any)=>x.name==='Фото').children[0].url).toBe('file_system/'+encodeURIComponent('Фото')+'/'+encodeURIComponent('кадр #1%.png'));expect(tree.files.some((x:any)=>x.name==='file_system/index.json')).toBe(true)}finally{rmSync(dir,{recursive:true,force:true})}});
