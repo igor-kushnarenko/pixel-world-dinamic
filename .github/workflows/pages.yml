@@ -16,12 +16,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: github-pages
-  cancel-in-progress: false
+  group: github-pages-current
+  cancel-in-progress: true
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
