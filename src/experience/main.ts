@@ -275,8 +275,9 @@ async function main() {
   window.addEventListener('pointermove', wake, { passive: true }); window.addEventListener('pointerdown', wake, { passive: true });
   window.addEventListener('keydown', e => {
     if (!entered || e.defaultPrevented || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key === 'Escape') { menu(false); return; }
+    if (e.key === 'Escape') { computerObject.handleKey('Escape');menu(false);e.preventDefault();return; }
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || e.target instanceof HTMLTextAreaElement || (e.target instanceof HTMLElement && e.target.isContentEditable)) return;
+    if(e.key==='Enter'&&settings.computer&&!document.body.classList.contains('menu-open')){e.preventDefault();if(!e.repeat)computerObject.handleKey('Enter');wake();return;}
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
       if (!e.repeat) changeView(e.key === 'ArrowLeft' ? -1 : 1);

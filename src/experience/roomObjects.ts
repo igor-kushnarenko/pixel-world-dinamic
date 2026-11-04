@@ -7,7 +7,7 @@ export async function mountRadio(host:HTMLElement,toggle:()=>void,tune:(directio
  let position:Body={x:1240,y:835,vy:0,width:W,height:h};
  try{const stored=localStorage.getItem(key),v=JSON.parse(stored||localStorage.getItem('pixel-world-dinamic.radio-position.v2')||'null');if(v&&Number.isFinite(v.x)&&Number.isFinite(v.y))position=restingPosition({...position,...dragPosition(v.x,v.y,W,h)})}catch{}
  const button=document.createElement('button');button.className='movable-radio';button.setAttribute('aria-label','Радио: нажать — включить, перетащить — переставить');button.title='Нажмите для включения · перетащите и отпустите — радио опустится на подоконник';
- button.append(image);const dial=document.createElement('span');dial.className='movable-radio-dial';button.append(dial);const knob=document.createElement('span');knob.className='radio-tuning-knob';knob.title='Колесико мыши — сменить станцию';button.append(knob);
+ button.append(image);const dial=document.createElement('span');dial.className='movable-radio-dial';button.append(dial);const knob=document.createElement('span');knob.className='radio-tuning-knob';knob.title='Колесико мыши — сменить станцию';button.append(knob);const powerRing=document.createElement('span');powerRing.className='radio-power-ring';button.append(powerRing);
  // Shared foreground occlusion: objects sit behind the shelf lips and side post.
  const objectPlane=document.createElement('div');objectPlane.className='room-object-plane';host.append(objectPlane);objectPlane.append(button);
  const mask=`url("${import.meta.env.BASE_URL}assets/room-v3/prepared/object-visibility.png")`;objectPlane.style.maskImage=mask;objectPlane.style.webkitMaskImage=mask;

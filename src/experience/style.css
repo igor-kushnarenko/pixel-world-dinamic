@@ -23,3 +23,11 @@
 .movable-computer .computer-keyboard{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;clip-path:polygon(11% 68%,74% 68%,74% 73%,87% 73%,94% 87%,6% 87%);filter:brightness(1.25) saturate(.65);opacity:0;mix-blend-mode:screen;transition:opacity .2s}
 
 .movable-computer .computer-keyboard,.movable-computer .computer-display{transition:none}
+
+.computer-power{border:1px solid #c9f0d34d;box-shadow:0 0 4px #c4e9c938,inset 0 0 3px #d1f5e326}
+.computer-power:hover{box-shadow:0 0 6px #c9efd577,inset 0 0 4px #d5f5e555}
+.radio-tuning-knob{border:1px solid #ffc98a40;box-shadow:0 0 4px #ffbd622b,inset 0 0 3px #ffd7a133}
+.radio-power-ring{position:absolute;left:51%;top:75%;width:12%;height:15%;border-radius:50%;border:1px solid #ffc98a40;box-shadow:0 0 4px #ffbd622b,inset 0 0 3px #ffd7a133;pointer-events:none}
+.computer-enter,.computer-esc{position:absolute;cursor:pointer;pointer-events:auto;border-radius:2px}
+.computer-enter{left:58.5%;top:78%;width:15%;height:5%}.computer-esc{left:10%;top:69%;width:10%;height:4.5%}
+.computer-enter:hover,.computer-esc:hover{box-shadow:0 0 4px #c6f0e27a;outline:1px solid #bdebd766}
