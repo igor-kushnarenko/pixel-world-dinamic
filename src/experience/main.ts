@@ -1,3 +1,4 @@
+import { mountRadio } from './roomObjects';
 import './style.css';
 import './interface.css';
 import { mountInterface } from './interface';
@@ -204,9 +205,10 @@ function fitScene() {
 async function main() {
   engine = await AtmosphereEngine.create({ container: $('scene-stage'), scene: await createApartmentLocation(settings.city,realWorld.screen),
     autoRender: false, parameters: { timeOfDay: shownTime }, onLightning: () => audio.thunder(), onError: e => { $('load-status').textContent = e.message; notify('Рендер приостановлен. Попробуйте обновить страницу.'); } });
+  const radioObject=await mountRadio($('room-hotspots'),()=>{void toggleRadio()});
   const observer = new ResizeObserver(fitScene); observer.observe($('scene-stage')); fitScene();
   window.addEventListener('fullscreenchange', fitScene);
-  engine.canvas.setAttribute('aria-label', 'Ночная квартира с ноутбуком, кружкой и радио у окна');
+  engine.canvas.setAttribute('aria-label', 'Квартира с перемещаемым радио у окна');
   Object.assign(window, { atmosphere: engine });
   const atmosphereFields = { hazeDensity: 'Плотность дымки', fogDensity: 'Плотность тумана', fogAmount: 'Количество тумана', billowing: 'Клубление' };
   $('atmosphere-controls').innerHTML = Object.keys(engine.getParameters().weather.layers).map(id => `<details><summary>${ATMOSPHERE_NAMES[id] ?? id} <span>+</span></summary>${Object.entries(atmosphereFields).map(([key, label]) => `<label class="slider-row" for="atmo-${id}-${key}"><span>${label}</span><input id="atmo-${id}-${key}" data-layer="${id}" data-atmosphere="${key}" type="range" min="0" max="100"><output id="atmo-${id}-${key}-value">0%</output></label>`).join('')}</details>`).join('');
@@ -291,6 +293,7 @@ async function main() {
     if (disposed) return;
     const dt = frameDeltaSeconds(now, previous); previous = now;
     if(!document.hidden){
+      radioObject.update(radioOn,ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient).room[0],shutter,roomRight);
       if(shutterDirection){shutter=shutterStep(shutter,shutterDirection,dt);settings.shutter=shutter;audio.setOcclusion(shutter,settings.citySound);citySound?.set(settings.citySound,settings.cityVolume,shutter);$<HTMLInputElement>('shutter-level').value=String(Math.round(shutter*100));$('shutter-level-value').textContent=`${Math.round(shutter*100)}%`;if(shutter===0||shutter===1)stopShutter();}
       engine.setWindowShutter(shutter,[roomLeft,roomRight,roomRadio,roomComputer]);
     }
