@@ -13,7 +13,7 @@ export function weatherName(code:number){
   if(code>=51&&code<=82)return 'Дождь';return 'Погода';
 }
 export function mountWeather(refreshScreen:()=>void){
-  const screen=document.createElement('canvas');screen.width=152;screen.height=104;
+  const screen=document.createElement('canvas');screen.width=360;screen.height=192;
   let place:Place|null=DEFAULT_PLACE,temperature='',description='Загрузка…',updated='',disposed=false,revision=0;
   let weatherRequest:AbortController|undefined, searchRequest:AbortController|undefined;
   try{const saved=JSON.parse(localStorage.getItem(key)??'null');if(validPlace(saved))place=saved;}catch{}
@@ -29,10 +29,10 @@ export function mountWeather(refreshScreen:()=>void){
     el('real-place').textContent=place?.name??'Местное время';
     el('real-weather').textContent=place?`${temperature} ${description}`.trim():'Выбрать город';
     const ctx=screen.getContext('2d')!;ctx.imageSmoothingEnabled=false;ctx.fillStyle='#0b202c';ctx.fillRect(0,0,screen.width,screen.height);
-    ctx.fillStyle='#78b9ba';ctx.font='8px monospace';ctx.fillText('PIXEL WORLD / ONLINE',9,13);
-    ctx.fillStyle='#b4e2da';ctx.font='bold 24px monospace';ctx.fillText(clock,9,44);
-    ctx.font='10px monospace';ctx.fillText((place?.name??'Местное время').slice(0,23),9,63);
-    ctx.fillStyle='#84b6c1';ctx.fillText((`${temperature} ${description}`.trim()||'Выберите город').slice(0,22),9,82);
+    ctx.fillStyle='#78b9ba';ctx.font='14px monospace';ctx.fillText('PIXEL WORLD / ONLINE',16,24);
+    ctx.fillStyle='#b4e2da';ctx.font='bold 56px monospace';ctx.fillText(clock,16,88);
+    ctx.font='24px monospace';ctx.fillText((place?.name??'Местное время').slice(0,22),16,126,328);
+    ctx.fillStyle='#84b6c1';ctx.font='20px monospace';ctx.fillText((`${temperature} ${description}`.trim()||'Выберите город').slice(0,26),16,164,328);
     refreshScreen();
   }
   async function loadWeather(){

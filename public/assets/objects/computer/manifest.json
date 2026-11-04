@@ -1,21 +1,32 @@
 {
   "id": "computer",
-  "sha256": "3434ccb6beb6bb951ef2a8ba53159e6a969d3457fa2bb65dc42c42896feb9157",
+  "sha256": "8ef9fb33c59a36d2be280f220170d4fc628f48dccef7a0de9aed6d1ff8048049",
   "sourceSize": [
-    1448,
-    1086
+    1362,
+    1155
   ],
   "crop": [
-    278,
-    83,
-    1166,
-    1000
+    168,
+    67,
+    1191,
+    1039
   ],
   "width": 280,
   "screen": [
-    142,
-    202,
-    626,
-    547
-  ]
+    92,
+    183,
+    932,
+    618
+  ],
+  "previousModel": {
+    "source": "original.png",
+    "crop": [
+      278,
+      83,
+      1166,
+      1000
+    ]
+  },
+  "source": "original-pc2.png",
+  "sprite": "sprite-pc2.png"
 }
