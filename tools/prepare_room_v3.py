@@ -25,7 +25,7 @@ shelf=Image.new('L',base.size)
 # Supplied half-disc is above the lamp. Reuse its lowest band for the shade's underside.
 shelf.paste(load('shelf-light-mask').convert('L').crop((74,648,150,653)),(74,700))
 em=Image.merge('RGB',(shelf,wall,Image.new('L',base.size)));em.save(OUT/'panel-emission.png')
-for name,cx,cy,rx,ry,color in [('shelf-light',112,707,340,290,(100,64,29)),('panel-light',1634,347,650,500,(70,49,25))]:
+for name,cx,cy,rx,ry,color in [('shelf-light',112,707,800,700,(135,90,45)),('panel-light',1634,347,1100,800,(110,80,48))]:
  im=Image.new('RGB',base.size);im.putdata([tuple(int(c*max(0,1-(((x-cx)/rx)**2+((y-cy)/ry)**2)**.5)) for c in color) for y in range(941) for x in range(1672)]);im.save(OUT/f'{name}.png')
 assert composite.getpixel((800,400))[3]==0
 assert tile.getchannel('A').getextrema()==(255,255)

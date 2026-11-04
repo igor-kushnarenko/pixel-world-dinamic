@@ -135,9 +135,9 @@ void main(){
   vec3 col=c.rgb*uTint;
   // Lamps illuminate the authored material; a smooth additive field alone erases its texture.
   vec3 direct=texture2D(uLeftLight,uv).rgb*controls.x+texture2D(uRightLight,uv).rgb*controls.y;
-  vec3 bounce=vec3(0.16,0.13,0.10)*max(controls.x,controls.y);
+  vec3 bounce=vec3(0.25,0.20,0.15)*max(controls.x,controls.y);
   bounce+=vec3(0.018,0.012,0.006)*controls.z;
-  col+=c.rgb*(direct*3.2+bounce);
+  col+=c.rgb*(direct*4.5+bounce);
   col+=vec3(1.0,0.72,0.42)*em.r*controls.x*0.35+vec3(1.0,0.62,0.28)*em.g*controls.y*0.3;
   vec2 pixel=floor(p)+0.5;
   float dial=step(uRadioDial.x,pixel.x)*step(pixel.x,uRadioDial.z)*step(uRadioDial.y,pixel.y)*step(pixel.y,uRadioDial.w);
@@ -281,8 +281,8 @@ void main(){
   float rib=slat<1.0?0.35:slat<3.0?1.15:0.78;
   float outside=pow(1.0-uShutterClosed,1.4)*(0.1+uExteriorAmbient*0.18);
   vec3 light=vec3(0.14,0.19,0.23)*outside;
-  light+=vec3(0.18,0.11,0.05)*uInterior.x*max(0.0,1.0-length((p-vec2(112.0,707.0))/vec2(550.0,350.0)));
-  light+=vec3(0.16,0.09,0.04)*uInterior.y*max(0.0,1.0-length((p-vec2(1575.0,350.0))/vec2(500.0,350.0)));
+  light+=vec3(0.18,0.11,0.05)*uInterior.x*max(0.0,1.0-length((p-vec2(112.0,707.0))/vec2(900.0,650.0)));
+  light+=vec3(0.16,0.09,0.04)*uInterior.y*max(0.0,1.0-length((p-vec2(1575.0,350.0))/vec2(1000.0,700.0)));
   light+=vec3(0.015,0.04,0.05)*uInterior.w*max(0.0,1.0-length((p-vec2(470.0,740.0))/vec2(350.0,250.0)));
   light+=vec3(0.025,0.018,0.008)*uInterior.z*max(0.0,1.0-length((p-vec2(1340.0,740.0))/vec2(300.0,200.0)));
   vec3 metal=texture2D(uSlatTexture,vec2(clamp((p.x-240.0)/1339.0,0.0,1.0),1.0-fract((p.y-uSlatTop)/78.0))).rgb;
