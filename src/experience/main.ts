@@ -293,7 +293,7 @@ async function main() {
     if (disposed) return;
     const dt = frameDeltaSeconds(now, previous); previous = now;
     if(!document.hidden){
-      radioObject.update(radioOn,ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient).room[0],shutter,roomRight);
+      radioObject.update(radioOn,ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient).room[0],shutter,roomRight,roomLeft);
       if(shutterDirection){shutter=shutterStep(shutter,shutterDirection,dt);settings.shutter=shutter;audio.setOcclusion(shutter,settings.citySound);citySound?.set(settings.citySound,settings.cityVolume,shutter);$<HTMLInputElement>('shutter-level').value=String(Math.round(shutter*100));$('shutter-level-value').textContent=`${Math.round(shutter*100)}%`;if(shutter===0||shutter===1)stopShutter();}
       engine.setWindowShutter(shutter,[roomLeft,roomRight,roomRadio,roomComputer]);
     }

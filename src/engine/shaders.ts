@@ -133,7 +133,11 @@ void main(){
   vec3 controls=floor(uRoomControls*24.0+0.5)/24.0;
   vec3 em=texture2D(uEmitters,uv).rgb;
   vec3 col=c.rgb*uTint;
-  col+=texture2D(uLeftLight,uv).rgb*controls.x+texture2D(uRightLight,uv).rgb*controls.y;
+  // Lamps illuminate the authored material; a smooth additive field alone erases its texture.
+  vec3 direct=texture2D(uLeftLight,uv).rgb*controls.x+texture2D(uRightLight,uv).rgb*controls.y;
+  vec3 bounce=vec3(0.16,0.13,0.10)*max(controls.x,controls.y);
+  bounce+=vec3(0.018,0.012,0.006)*controls.z;
+  col+=c.rgb*(direct*3.2+bounce);
   col+=vec3(1.0,0.72,0.42)*em.r*controls.x*0.35+vec3(1.0,0.62,0.28)*em.g*controls.y*0.3;
   vec2 pixel=floor(p)+0.5;
   float dial=step(uRadioDial.x,pixel.x)*step(pixel.x,uRadioDial.z)*step(uRadioDial.y,pixel.y)*step(pixel.y,uRadioDial.w);
