@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "sceneSize": [
+    1672,
+    941
+  ],
+  "status": "originals-imported-requires-preparation",
+  "files": [
+    {
+      "file": "originals/room-base.png",
+      "sourceName": "Изображение_ChatGPT_4_нояб_2026_г_,_18_38_45_1.png",
+      "role": "empty-room-base",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "sha256": "348b34895c6d77b4d20a4f82d0e99951955c8bc43bb7dc3c96f881b1160893cb",
+      "hasAlpha": false,
+      "transparentPixels": 0,
+      "windowHasTransparency": false,
+      "windowComponentBounds": [
+        236,
+        116,
+        1576,
+        745
+      ]
+    },
+    {
+      "file": "originals/room-foreground.png",
+      "sourceName": "Изображение_ChatGPT_4_нояб_2026_г_,_18_38_56_2.png",
+      "role": "shelf-and-sill-front-edges",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "sha256": "216bad5781e6556f58642ddfe62726cd681544c0c33cab1ae0dc89f1a4e49a11",
+      "hasAlpha": true,
+      "transparentPixels": 1455111,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "opaqueBounds": [
+        49,
+        222,
+        1672,
+        889
+      ]
+    },
+    {
+      "file": "originals/shutter-housing.png",
+      "sourceName": "Изображение_ChatGPT_4_нояб_2026_г_,_18_38_59_3.png",
+      "role": "roller-housing",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "sha256": "547cb8e03c394e86ec90727a997cd2be8a1077de4d07d2f18ba8da5eb94e74c2",
+      "hasAlpha": true,
+      "transparentPixels": 1468994,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "opaqueBounds": [
+        147,
+        34,
+        1624,
+        115
+      ]
+    },
+    {
+      "file": "originals/shutter-slats.png",
+      "sourceName": "Изображение_ChatGPT_4_нояб_2026_г_,_18_39_02_4.png",
+      "role": "roller-material",
+      "size": [
+        1122,
+        1402
+      ],
+      "mode": "RGBA",
+      "sha256": "2ea3183d2d7e6e900ef0ea8118a247c167b970fe0a1d7cee6489ee1e993c209a",
+      "hasAlpha": true,
+      "transparentPixels": 271519,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "opaqueBounds": [
+        26,
+        105,
+        1096,
+        1292
+      ]
+    },
+    {
+      "file": "originals/wall-light-mask.png",
+      "sourceName": "Изображение_ChatGPT_4_нояб_2026_г_,_18_39_05_5.png",
+      "role": "fixed-light-emission",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "sha256": "4a0744a278dbd3c5494bcbf5a4e646dadf28028bd60a1fa54408648b0a5c3cd5",
+      "hasAlpha": false,
+      "transparentPixels": 0,
+      "emitterBounds": [
+        1626,
+        253,
+        1642,
+        441
+      ]
+    },
+    {
+      "file": "originals/reference-assembled.png",
+      "sourceName": "Изображение_ChatGPT_4_нояб_2026_г_,_18_39_07_6.png",
+      "role": "assembly-reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "sha256": "e21a9eade9cfdde4070ef16f163386cb80c7e3d14b0c08c294b9c56f7999870f",
+      "hasAlpha": false,
+      "transparentPixels": 0,
+      "windowHasTransparency": false,
+      "windowComponentBounds": [
+        243,
+        120,
+        1577,
+        743
+      ]
+    }
+  ],
+  "notes": [
+    "Room base and assembly reference have opaque white windows. A separate technical window mask and render-time cutout are required.",
+    "Use foreground before placing objects only after checking that front edges are not duplicated in base.",
+    "Housing source and assembled reference differ in geometry; do not automatically stretch or shift architecture.",
+    "Slat texture is not scene-sized and contains transparent padding. It requires a crop/repeat region before use.",
+    "RGB light mask is valid as an intensity mask; black is not alpha.",
+    "Reference assembly is not an additional room layer."
+  ]
+}
