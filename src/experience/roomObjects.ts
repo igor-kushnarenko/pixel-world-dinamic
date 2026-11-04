@@ -1,6 +1,6 @@
 import { exteriorVisibility } from './shutter';
 import { dragPosition, fallStep, restingPosition, type Body } from './objectPhysics';
-const WIDTH=1672, HEIGHT=941, W=140;
+const WIDTH=1672, HEIGHT=941, W=220;
 export async function mountRadio(host:HTMLElement,toggle:()=>void,tune:(direction:number)=>void){
  const image=new Image();image.src=`${import.meta.env.BASE_URL}assets/objects/radio/sprite.png`;await image.decode();
  const h=Math.round(W*image.height/image.width), key='pixel-world-dinamic.radio-position.v3';
