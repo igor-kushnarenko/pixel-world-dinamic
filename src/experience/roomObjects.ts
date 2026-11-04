@@ -1,12 +1,12 @@
 import { exteriorVisibility } from './shutter';
-import { dragPosition, fallStep, restingPosition, migratePlacement, type Body } from './objectPhysics';
+import { dragPosition, fallStep, restingPosition, type Body } from './objectPhysics';
 const WIDTH=1672, HEIGHT=941, W=140;
 export async function mountRadio(host:HTMLElement,toggle:()=>void,tune:(direction:number)=>void){
  const image=new Image();image.src=`${import.meta.env.BASE_URL}assets/objects/radio/sprite.png`;await image.decode();
  const h=Math.round(W*image.height/image.width), key='pixel-world-dinamic.radio-position.v3';
  let position:Body={x:1240,y:835,vy:0,width:W,height:h};
- try{const stored=localStorage.getItem(key),v=JSON.parse(stored||localStorage.getItem('pixel-world-dinamic.radio-position.v2')||'null');if(v&&Number.isFinite(v.x)&&Number.isFinite(v.y))position=(stored?restingPosition:migratePlacement)({...position,...dragPosition(v.x,v.y,W,h)})}catch{}
- const button=document.createElement('button');button.className='movable-radio';button.setAttribute('aria-label','Радио: нажать — включить, перетащить — переставить');button.title='Нажмите для включения · перетащите и отпустите — радио упадёт на полку или подоконник';
+ try{const stored=localStorage.getItem(key),v=JSON.parse(stored||localStorage.getItem('pixel-world-dinamic.radio-position.v2')||'null');if(v&&Number.isFinite(v.x)&&Number.isFinite(v.y))position=restingPosition({...position,...dragPosition(v.x,v.y,W,h)})}catch{}
+ const button=document.createElement('button');button.className='movable-radio';button.setAttribute('aria-label','Радио: нажать — включить, перетащить — переставить');button.title='Нажмите для включения · перетащите и отпустите — радио опустится на подоконник';
  button.append(image);const dial=document.createElement('span');dial.className='movable-radio-dial';button.append(dial);const knob=document.createElement('span');knob.className='radio-tuning-knob';knob.title='Колесико мыши — сменить станцию';button.append(knob);
  // Shared foreground occlusion: objects sit behind the shelf lips and side post.
  const objectPlane=document.createElement('div');objectPlane.className='room-object-plane';host.append(objectPlane);objectPlane.append(button);
