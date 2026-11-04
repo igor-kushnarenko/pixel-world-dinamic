@@ -10,7 +10,7 @@ export async function mountRadio(host:HTMLElement,toggle:()=>void,tune:(directio
  button.append(image);const dial=document.createElement('span');dial.className='movable-radio-dial';button.append(dial);const knob=document.createElement('span');knob.className='radio-tuning-knob';knob.title='Колесико мыши — сменить станцию';button.append(knob);
  // Shared foreground occlusion: objects sit behind the shelf lips and side post.
  const objectPlane=document.createElement('div');objectPlane.className='room-object-plane';host.append(objectPlane);objectPlane.append(button);
- const mask=`url("${import.meta.env.BASE_URL}assets/room-v2/prepared/object-visibility.png")`;objectPlane.style.maskImage=mask;objectPlane.style.webkitMaskImage=mask;
+ const mask=`url("${import.meta.env.BASE_URL}assets/room-v3/prepared/object-visibility.png")`;objectPlane.style.maskImage=mask;objectPlane.style.webkitMaskImage=mask;
  let wheelTime=-Infinity;knob.addEventListener('wheel',e=>{e.preventDefault();e.stopPropagation();if(!e.deltaY)return;const now=performance.now();if(now-wheelTime<180)return;wheelTime=now;tune(Math.sign(e.deltaY));},{passive:false});
  function place(){button.style.left=`${position.x/WIDTH*100}%`;button.style.top=`${(position.y-h)/HEIGHT*100}%`;button.style.width=`${W/WIDTH*100}%`}
  place();let start:{x:number;y:number;px:number;py:number;id:number}|undefined,moved=false;
