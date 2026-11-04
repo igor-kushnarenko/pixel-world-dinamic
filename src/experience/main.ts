@@ -205,7 +205,7 @@ function fitScene() {
 async function main() {
   engine = await AtmosphereEngine.create({ container: $('scene-stage'), scene: await createApartmentLocation(settings.city,realWorld.screen),
     autoRender: false, parameters: { timeOfDay: shownTime }, onLightning: () => audio.thunder(), onError: e => { $('load-status').textContent = e.message; notify('Рендер приостановлен. Попробуйте обновить страницу.'); } });
-  const radioObject=await mountRadio($('room-hotspots'),()=>{void toggleRadio()});
+  const radioObject=await mountRadio($('room-hotspots'),()=>{void toggleRadio()},direction=>{tuner.turn(direction);updateRadioUI();audio.click()});
   const observer = new ResizeObserver(fitScene); observer.observe($('scene-stage')); fitScene();
   window.addEventListener('fullscreenchange', fitScene);
   engine.canvas.setAttribute('aria-label', 'Квартира с перемещаемым радио у окна');

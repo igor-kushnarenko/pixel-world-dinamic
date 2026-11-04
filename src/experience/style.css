@@ -8,3 +8,6 @@
 .movable-radio img{display:block;width:100%;height:auto;image-rendering:pixelated;pointer-events:none}
 .movable-radio.dragging{cursor:grabbing}.movable-radio:focus-visible{outline:2px solid #b2dce7;outline-offset:5px}
 .movable-radio-dial{position:absolute;left:45.7%;top:51.5%;width:46%;height:15%;background:linear-gradient(0deg,#ffb34b60,#ffc86b20);box-shadow:0 0 9px #ffbd5540;opacity:0;pointer-events:none;transition:opacity .2s;mix-blend-mode:screen}
+
+.radio-tuning-knob{position:absolute;left:74%;top:70%;width:17%;height:21%;border-radius:50%;pointer-events:auto;cursor:ns-resize;transition:background .15s,box-shadow .15s}
+.radio-tuning-knob:hover{background:#ffc47735;box-shadow:0 0 6px 2px #ffb85b65,inset 0 0 5px #ffcf8a70}
