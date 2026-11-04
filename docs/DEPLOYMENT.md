@@ -1,5 +1,7 @@
 # Публикация на GitHub Pages
 
+**Текущий проект: pixel-world-dinamic.** [Сайт](https://igor-kushnarenko.github.io/pixel-world-dinamic/) · [Репозиторий](https://github.com/igor-kushnarenko/pixel-world-dinamic) · [Отделение и проверка](FORK.md). Публикация новой копии проверена 04.11.2026; 48 тестов и сборка прошли. Ниже сохранена история первой публикации исходного pixel-world; общая схема Actions применяется и к новой копии.
+
 **Статус: опубликовано и проверено 03.11.2026.**
 
 [Открыть сайт](https://igor-kushnarenko.github.io/pixel-world/) · [Репозиторий](https://github.com/igor-kushnarenko/pixel-world) · [Первая успешная публикация](https://github.com/igor-kushnarenko/pixel-world/actions/runs/41603175058).

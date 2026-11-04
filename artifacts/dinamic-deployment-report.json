@@ -1,0 +1,42 @@
+{
+  "url": "https://igor-kushnarenko.github.io/pixel-world-dinamic/",
+  "sourceCommit": "b83dd778a9730eabf8a9a69140ca03f618fcaae2",
+  "checkedAt": "2026-11-04T15:26:27.435Z",
+  "status": 200,
+  "unitTests": 48,
+  "checks": [
+    "Native scene loads",
+    "Quiet entry and focused menu",
+    "Computer toggle",
+    "Shutter control",
+    "All same-origin assets use new Pages path"
+  ],
+  "state": {
+    "width": 1672,
+    "height": 941,
+    "shutter": "40",
+    "resources": [
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/index-Dcivg4A4.js",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/main-Dy6FGmeH.js",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/AtmosphereEngine-B5chHdjb.js",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/main-BfVf1YxI.css",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/favicon.svg",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/nightcity/originals/room.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/nightcity/originals/city-far.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/apartment/masks/far_fx.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/nightcity/originals/city-mid-far.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/apartment/masks/midfar_fx.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/nightcity/originals/city-mid-near.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/apartment/masks/midnear_fx.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/nightcity/originals/city-near.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/apartment/masks/near_fx.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/nightcity/originals/room.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/apartment/masks/lit_left.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/apartment/masks/room_emit.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/apartment/masks/lit_right.png",
+      "https://igor-kushnarenko.github.io/pixel-world-dinamic/assets/apartment/stations.json"
+    ]
+  },
+  "errors": [],
+  "badResources": []
+}
