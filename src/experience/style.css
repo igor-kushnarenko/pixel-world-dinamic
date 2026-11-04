@@ -37,3 +37,5 @@
 .computer-power{left:77.4%;top:70.6%;width:11%;height:7.5%}
 .computer-enter{left:58%;top:79.5%;width:15%;height:4.5%}.computer-esc{left:10.2%;top:70%;width:9.5%;height:4.5%}
 .movable-computer .computer-keyboard{clip-path:polygon(10% 70%,73% 70%,73% 78%,94% 78%,95% 90%,6% 90%)}
+
+.object-material{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;image-rendering:pixelated}

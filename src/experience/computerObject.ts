@@ -1,5 +1,5 @@
 import { computerView, drawCommander, type ComputerView } from './computerScreen';
-import { exteriorVisibility } from './shutter';
+import { createObjectMaterial } from './objectLight';
 import { dragPosition, fallStep, restingPosition, type Body } from './objectPhysics';
 const WIDTH=1672, HEIGHT=941, W=280;
 export async function mountComputer(host:HTMLElement,toggle:()=>void,screen:HTMLCanvasElement){
@@ -9,6 +9,7 @@ export async function mountComputer(host:HTMLElement,toggle:()=>void,screen:HTML
  try{const stored=localStorage.getItem(key),v=JSON.parse(stored||'null');if(v&&Number.isFinite(v.x)&&Number.isFinite(v.y))position=restingPosition({...position,...dragPosition(v.x,v.y,W,h)})}catch{}
  const button=document.createElement('button');button.className='movable-radio movable-computer';button.setAttribute('aria-label','Компьютер: кнопка питания — включить, корпус — перетащить');button.title='Нажмите для включения · перетащите и отпустите — компьютер опустится на подоконник';
  button.append(image);
+ const material=createObjectMaterial(image,W,h);button.append(material.canvas);
  const keyboard=new Image();keyboard.src=image.src;keyboard.className='computer-keyboard';button.append(keyboard);
  const display=document.createElement('canvas');display.width=360;display.height=192;display.className='computer-display';button.append(display);const ctx=display.getContext('2d')!;ctx.imageSmoothingEnabled=false;
  const glass=document.createElement('span');glass.className='computer-glass';button.append(glass);
@@ -27,5 +28,5 @@ export async function mountComputer(host:HTMLElement,toggle:()=>void,screen:HTML
  button.onpointerup=e=>end(e);button.onpointercancel=e=>end(e,true);button.onlostpointercapture=e=>end(e as PointerEvent,true);
  button.onclick=e=>{if(e.detail===0)toggle()};
  let saved='',previous=performance.now();
- return {handleKey,update(on:boolean,ambient:number,closed:number,panel:number,lamp:number=0){const now=performance.now();if(!start){position=fallStep(position,(now-previous)/1000);place();if(position.vy===0){const data=JSON.stringify({x:Math.round(position.x),y:Math.round(position.y)});if(data!==saved){try{localStorage.setItem(key,data)}catch{}saved=data}}}previous=now;button.setAttribute('aria-pressed',String(on));image.style.filter=`brightness(${Math.max(0.025,ambient*exteriorVisibility(closed)+panel*0.9+lamp*(0.25+Math.max(0,1-Math.hypot((position.x+W/2-112)/1000,(position.y-707)/700))*.7))})`;display.style.opacity=on?'1':'0';keyboard.style.opacity=on?'0.5':'0';power.classList.toggle('on',on);if(!on){view='weather';dirty=true}button.dataset.screenMode=view;if(on&&(!wasOn||dirty||now-lastDraw>1000)){ctx.clearRect(0,0,360,192);if(view==='files')drawCommander(ctx);else ctx.drawImage(screen,0,0,360,192);lastDraw=now;dirty=false}wasOn=on;objectPlane.style.zIndex=String(Math.round(position.y))}};
+ return {handleKey,update(on:boolean,ambient:number,closed:number,panel:number,lamp:number=0){const now=performance.now();if(!start){position=fallStep(position,(now-previous)/1000);place();if(position.vy===0){const data=JSON.stringify({x:Math.round(position.x),y:Math.round(position.y)});if(data!==saved){try{localStorage.setItem(key,data)}catch{}saved=data}}}previous=now;button.setAttribute('aria-pressed',String(on));material.update(position.x,position.y,{ambient,closed,panel,lamp});display.style.opacity=on?'1':'0';keyboard.style.opacity=on?'0.5':'0';power.classList.toggle('on',on);if(!on){view='weather';dirty=true}button.dataset.screenMode=view;if(on&&(!wasOn||dirty||now-lastDraw>1000)){ctx.clearRect(0,0,360,192);if(view==='files')drawCommander(ctx);else ctx.drawImage(screen,0,0,360,192);lastDraw=now;dirty=false}wasOn=on;objectPlane.style.zIndex=String(Math.round(position.y))}};
 }

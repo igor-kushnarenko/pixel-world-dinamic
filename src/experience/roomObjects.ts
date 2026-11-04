@@ -1,4 +1,4 @@
-import { exteriorVisibility } from './shutter';
+import { createObjectMaterial } from './objectLight';
 import { dragPosition, fallStep, restingPosition, type Body } from './objectPhysics';
 const WIDTH=1672, HEIGHT=941, W=220;
 export async function mountRadio(host:HTMLElement,toggle:()=>void,tune:(direction:number)=>void){
@@ -7,7 +7,8 @@ export async function mountRadio(host:HTMLElement,toggle:()=>void,tune:(directio
  let position:Body={x:1240,y:835,vy:0,width:W,height:h};
  try{const stored=localStorage.getItem(key),v=JSON.parse(stored||localStorage.getItem('pixel-world-dinamic.radio-position.v2')||'null');if(v&&Number.isFinite(v.x)&&Number.isFinite(v.y))position=restingPosition({...position,...dragPosition(v.x,v.y,W,h)})}catch{}
  const button=document.createElement('button');button.className='movable-radio';button.setAttribute('aria-label','Радио: нажать — включить, перетащить — переставить');button.title='Нажмите для включения · перетащите и отпустите — радио опустится на подоконник';
- button.append(image);const dial=document.createElement('span');dial.className='movable-radio-dial';button.append(dial);const knob=document.createElement('span');knob.className='radio-tuning-knob';knob.title='Колесико мыши — сменить станцию';button.append(knob);const powerRing=document.createElement('span');powerRing.className='radio-power-ring';button.append(powerRing);
+ button.append(image);
+ const material=createObjectMaterial(image,W,h);button.append(material.canvas);const dial=document.createElement('span');dial.className='movable-radio-dial';button.append(dial);const knob=document.createElement('span');knob.className='radio-tuning-knob';knob.title='Колесико мыши — сменить станцию';button.append(knob);const powerRing=document.createElement('span');powerRing.className='radio-power-ring';button.append(powerRing);
  // Shared foreground occlusion: objects sit behind the shelf lips and side post.
  const objectPlane=document.createElement('div');objectPlane.className='room-object-plane';host.append(objectPlane);objectPlane.append(button);
  const mask=`url("${import.meta.env.BASE_URL}assets/room-v3/prepared/object-visibility.png")`;objectPlane.style.maskImage=mask;objectPlane.style.webkitMaskImage=mask;
@@ -20,5 +21,5 @@ export async function mountRadio(host:HTMLElement,toggle:()=>void,tune:(directio
  button.onpointerup=e=>end(e);button.onpointercancel=e=>end(e,true);button.onlostpointercapture=e=>end(e as PointerEvent,true);
  button.onclick=e=>{if(e.detail===0)toggle()};
  let saved='',previous=performance.now();
- return {update(on:boolean,ambient:number,closed:number,panel:number,lamp:number=0){const now=performance.now();if(!start){position=fallStep(position,(now-previous)/1000);place();if(position.vy===0){const data=JSON.stringify({x:Math.round(position.x),y:Math.round(position.y)});if(data!==saved){try{localStorage.setItem(key,data)}catch{}saved=data}}}previous=now;button.setAttribute('aria-pressed',String(on));image.style.filter=`brightness(${Math.max(0.025,ambient*exteriorVisibility(closed)+panel*0.9+lamp*(0.25+Math.max(0,1-Math.hypot((position.x+W/2-112)/1000,(position.y-707)/700))*.7))})`;dial.style.opacity=on?'1':'0';objectPlane.style.zIndex=String(Math.round(position.y))}};
+ return {update(on:boolean,ambient:number,closed:number,panel:number,lamp:number=0){const now=performance.now();if(!start){position=fallStep(position,(now-previous)/1000);place();if(position.vy===0){const data=JSON.stringify({x:Math.round(position.x),y:Math.round(position.y)});if(data!==saved){try{localStorage.setItem(key,data)}catch{}saved=data}}}previous=now;button.setAttribute('aria-pressed',String(on));material.update(position.x,position.y,{ambient,closed,panel,lamp});dial.style.opacity=on?'1':'0';objectPlane.style.zIndex=String(Math.round(position.y))}};
 }
