@@ -1,5 +1,6 @@
 export interface FileEntry {type:'directory'|'file';name:string;path:string;children?:FileEntry[];size?:number;url?:string}
 export class FileBrowser {
+ constructor(public openFile?:(file:FileEntry,siblings:FileEntry[])=>boolean){}
  root:FileEntry={type:'directory',name:'file_system',path:'',children:[]};
  frames:{node:FileEntry;index:number}[]=[{node:this.root,index:0}];
  status='Загрузка…';ready=false;
@@ -17,7 +18,7 @@ export class FileBrowser {
   const item=this.selected;if(!item)return 'handled';
   if(item.name==='..'){this.frames.pop();this.status=''}
   else if(item.type==='directory'){this.frames.push({node:item,index:0});this.status=''}
-  else this.status='Просмотр файлов — позже';
+  else this.status=this.openFile?.(item,this.entries)?'':'Для этого файла просмотр появится позже';
   return 'handled';
  }
 }
