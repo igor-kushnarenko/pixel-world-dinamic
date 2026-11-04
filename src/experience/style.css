@@ -11,3 +11,5 @@
 
 .radio-tuning-knob{position:absolute;left:74%;top:70%;width:17%;height:21%;border-radius:50%;pointer-events:auto;cursor:ns-resize;transition:background .15s,box-shadow .15s}
 .radio-tuning-knob:hover{background:#ffc47735;box-shadow:0 0 6px 2px #ffb85b65,inset 0 0 5px #ffcf8a70}
+
+.room-object-plane{position:absolute;inset:0;pointer-events:none;z-index:3;mask-size:100% 100%;mask-repeat:no-repeat;mask-mode:alpha;-webkit-mask-size:100% 100%;-webkit-mask-repeat:no-repeat}

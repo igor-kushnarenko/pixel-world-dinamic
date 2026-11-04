@@ -59,3 +59,18 @@ emission.save(OUT / 'panel-emission.png')
 light = Image.new('RGB', base.size)
 light.putdata([tuple(int(c * max(0, 1-(((x-1634)/650)**2+((y-347)/500)**2)**0.5)) for c in (70,49,25)) for y in range(941) for x in range(1672)])
 light.save(OUT / 'panel-light.png')
+
+# Visibility for movable room objects: structural front edges remain in front.
+# Inverse alpha mask avoids duplicating or relighting the original room pixels.
+from PIL import ImageChops, ImageDraw
+front = load('room-foreground.png').getchannel('A')
+# Discard faint export residue while retaining the authored antialiased edges.
+front = front.point(lambda a: a if a >= 32 else 0)
+post = Image.new('L', base.size, 0)
+ImageDraw.Draw(post).rectangle((0, 70, 77, 844), fill=255)
+front = ImageChops.lighter(front, post)
+visibility = Image.new('RGBA', base.size, (255,255,255,255))
+visibility.putalpha(ImageChops.invert(front))
+visibility.save(OUT / 'object-visibility.png')
+assert visibility.getpixel((72,500))[3] == 0
+assert visibility.getpixel((600,500))[3] == 255
