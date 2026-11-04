@@ -1,3 +1,4 @@
+import { mountComputer } from './computerObject';
 import { mountRadio } from './roomObjects';
 import './style.css';
 import './interface.css';
@@ -184,8 +185,7 @@ async function enter(sound: boolean) {
   $<HTMLButtonElement>('menu-toggle').disabled = false;
   for (const id of Object.keys(HOTSPOTS)) $<HTMLButtonElement>('hit-' + id).disabled = false;
   for(const id of ['radio','computer']) $('hit-'+id).hidden=true;
-  for(const id of ['computer-toggle']){const button=$<HTMLButtonElement>(id);button.disabled=true;button.title='Предмет ещё не добавлен в новую комнату';}
-  settings.computer=false;
+  
   $('menu-toggle').focus(); syncUI(); wake();
 }
 function fitScene() {
@@ -206,6 +206,7 @@ async function main() {
   engine = await AtmosphereEngine.create({ container: $('scene-stage'), scene: await createApartmentLocation(settings.city,realWorld.screen),
     autoRender: false, parameters: { timeOfDay: shownTime }, onLightning: () => audio.thunder(), onError: e => { $('load-status').textContent = e.message; notify('Рендер приостановлен. Попробуйте обновить страницу.'); } });
   const radioObject=await mountRadio($('room-hotspots'),()=>{void toggleRadio()},direction=>{tuner.turn(direction);updateRadioUI();audio.click()});
+  const computerObject=await mountComputer($('room-hotspots'),()=>{settings.computer=!settings.computer;applyEnvironment();audio.click();},realWorld.screen);
   const observer = new ResizeObserver(fitScene); observer.observe($('scene-stage')); fitScene();
   window.addEventListener('fullscreenchange', fitScene);
   engine.canvas.setAttribute('aria-label', 'Квартира с перемещаемым радио у окна');
@@ -293,6 +294,7 @@ async function main() {
     if (disposed) return;
     const dt = frameDeltaSeconds(now, previous); previous = now;
     if(!document.hidden){
+      computerObject.update(settings.computer,ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient).room[0],shutter,roomRight,roomLeft);
       radioObject.update(radioOn,ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient).room[0],shutter,roomRight,roomLeft);
       if(shutterDirection){shutter=shutterStep(shutter,shutterDirection,dt);settings.shutter=shutter;audio.setOcclusion(shutter,settings.citySound);citySound?.set(settings.citySound,settings.cityVolume,shutter);$<HTMLInputElement>('shutter-level').value=String(Math.round(shutter*100));$('shutter-level-value').textContent=`${Math.round(shutter*100)}%`;if(shutter===0||shutter===1)stopShutter();}
       engine.setWindowShutter(shutter,[roomLeft,roomRight,roomRadio,roomComputer]);

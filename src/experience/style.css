@@ -13,3 +13,13 @@
 .radio-tuning-knob:hover{background:#ffc47735;box-shadow:0 0 6px 2px #ffb85b65,inset 0 0 5px #ffcf8a70}
 
 .room-object-plane{position:absolute;inset:0;pointer-events:none;z-index:3;mask-size:100% 100%;mask-repeat:no-repeat;mask-mode:alpha;-webkit-mask-size:100% 100%;-webkit-mask-repeat:no-repeat}
+
+.computer-display,.computer-glass{position:absolute;left:16%;top:22%;width:54.5%;height:37.6%;border-radius:12% / 10%;pointer-events:none}
+.computer-display{image-rendering:pixelated;opacity:0;box-shadow:0 0 8px #79b9bc25;transition:opacity .18s}
+.computer-glass{background:linear-gradient(135deg,#c8e2e514,transparent 32%,transparent 80%,#8bcbde0b);box-shadow:inset 0 0 5px 2px #0006}
+.computer-power{position:absolute;left:81.5%;top:51.5%;width:9%;height:9%;border-radius:15%;pointer-events:auto;cursor:pointer}
+.computer-power:hover{box-shadow:0 0 4px #b8e6e899}.computer-power.on{background:#8fc6c515;box-shadow:0 -7px 3px -1px #9eeac26b}
+
+.movable-computer .computer-keyboard{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;clip-path:polygon(11% 68%,74% 68%,74% 73%,87% 73%,94% 87%,6% 87%);filter:brightness(1.25) saturate(.65);opacity:0;mix-blend-mode:screen;transition:opacity .2s}
+
+.movable-computer .computer-keyboard,.movable-computer .computer-display{transition:none}
