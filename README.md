@@ -1,10 +1,12 @@
-# Ночь за окном · ПИКСЕЛЬНЫЙ МИР
+# pixel-world-dinamic · ПИКСЕЛЬНЫЙ МИР
+
+Самостоятельная копия pixel-world для дальнейшей разработки интерактивной комнаты. Исходный коммит: b83dd778a9730eabf8a9a69140ca03f618fcaae2. [Описание отделения](docs/FORK.md).
 
 Рабочий переиспользуемый прототип на **TypeScript + Three.js + GLSL**, реализованный по `live_sky_instructions.md` v1.0. Канонический файл скопирован без изменений из предоставленного пользователем источника.
 
 **v0.2:** полноэкранная квартира, компактное меню, два светильника, окружающие звуки, дождь и живое радио. Сборка окружения и аудиосистема адаптированы из пользовательского [nightcity](https://github.com/igor-kushnarenko/nightcity); небо и два облачных поля остаются процедурными. [Описание переноса и управления](docs/APARTMENT.md).
 
-**[Открыть опубликованную сцену](https://igor-kushnarenko.github.io/pixel-world/)** · [Репозиторий GitHub](https://github.com/igor-kushnarenko/pixel-world)
+**[Открыть опубликованную сцену](https://igor-kushnarenko.github.io/pixel-world-dinamic/)** · [Репозиторий GitHub](https://github.com/igor-kushnarenko/pixel-world-dinamic)
 
 Публикация на GitHub Pages настроена через `.github/workflows/pages.yml`; порядок обновления и проверки публичного сайта описан в [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
