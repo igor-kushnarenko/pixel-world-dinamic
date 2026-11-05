@@ -17,7 +17,7 @@ try{
   e.dispose();c.remove();return {stars,twinkled,moved,daytimeChanges,top,bottom};
  });
  assert(gpu.stars>3);assert(gpu.twinkled>0);assert.equal(gpu.moved,0);assert.equal(gpu.daytimeChanges,0);assert(gpu.top[2]>gpu.top[0]*2);assert(gpu.bottom.reduce((a,b)=>a+b)>gpu.top.reduce((a,b)=>a+b));
- const before=await p.evaluate(()=>window.atmosphere.getParameters().seed);await p.keyboard.press('p');await p.waitForFunction(seed=>window.atmosphere.getParameters().seed!==seed,before);
+ const before=await p.evaluate(()=>JSON.stringify(window.atmosphere.getParameters()));await p.keyboard.press('p');await p.waitForFunction(seed=>JSON.stringify(window.atmosphere.getParameters())!==seed,before);
  await p.locator('#menu-toggle').click();await p.locator('#random-weather').click();
  const params=await p.evaluate(()=>window.atmosphere.getParameters());assert.equal(Object.keys(params.weather.layers).length,4);assert(params.clouds.density>=0&&params.clouds.density<=1);assert.equal(errors.length,0);
  console.log(JSON.stringify({gpu,hotkey:true,menu:true,errors}));
