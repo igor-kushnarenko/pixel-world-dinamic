@@ -319,12 +319,7 @@ void main(){
   if(texture2D(uGlassMask,vUv).r<0.5 || (1.0-vUv.y)*uGlassResolution.y<=uShutterEdge){gl_FragColor=base;return;}
   vec2 pixel=floor(vUv*uGlassResolution)+0.5;
   vec2 shift=vec2(0.0);float rim=0.0;
-  // Dense beads and long meandering rivulets remain attached to the glass.
-  vec2 cell=floor(pixel/vec2(24.0,32.0));
-  float id=fract(sin(dot(cell,vec2(127.1,311.7)))*43758.5453);
-  vec2 bead=mod(pixel,vec2(24.0,32.0))-vec2(4.0+id*16.0,5.0+fract(id*17.0)*22.0);
-  vec2 bq=bead/vec2(1.1+id*1.8,2.0+id*2.6);float bd=dot(bq,bq);
-  if(id>.22&&bd<1.0){shift=bq*3.5;rim=(step(.55,bd)*.17-step(bq.y,0.0)*.055);}
+  // Long meandering rivulets remain attached to the glass.
   float lane=floor(pixel.x/53.0),wave=sin(pixel.y*.018+lane*2.7)*2.0+sin(pixel.y*.053+lane)*.7;
   float stream=abs(mod(pixel.x,53.0)-26.0-wave);
   if(stream<1.3){shift+=vec2(sin(pixel.y*.03)*2.5,1.0);rim+=.035;}

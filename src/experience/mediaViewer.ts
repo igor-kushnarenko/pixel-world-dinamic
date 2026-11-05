@@ -32,13 +32,13 @@ export function createMediaViewer(host:HTMLElement,onClose:()=>void=()=>{}){
   if(kind==='image'){
    image=new Image();image.alt=title;image.className='crt-media-image';image.onload=()=>{if(revision===mine)status=''};image.onerror=()=>{if(revision===mine)status='Не удалось открыть изображение'};image.src=url;el('.crt-media-source').append(image);return;
   }
-  const element=document.createElement(kind==='audio'?'audio':'video');media=element;element.preload='metadata';element.volume=volume;element.src=url;
+  const element=document.createElement(kind==='audio'?'audio':'video');media=element;element.loop=true;element.preload='metadata';element.volume=volume;element.src=url;
   if(kind==='video'){(element as HTMLVideoElement).playsInline=true;element.className='crt-media-video'}else element.className='crt-media-audio';
   element.onloadedmetadata=()=>{if(revision===mine){status='';updateControls()}};
   element.onplay=element.onpause=element.ontimeupdate=element.ondurationchange=updateControls;
   element.onvolumechange=()=>{volume=element.volume;try{localStorage.setItem('pixel-world.media-volume',String(volume))}catch{}updateControls()};
   element.onerror=()=>{if(revision===mine)status='Формат или кодек недоступен'};
-  element.onended=()=>{if(kind==='audio'&&index+1<playlist.length)move(1);else updateControls()};
+  element.onended=()=>{updateControls()};
   el('.crt-media-source').append(element);updateControls();void playMedia();
  }
  const toggle=()=>{if(media?.paused)void playMedia();else media?.pause()};
