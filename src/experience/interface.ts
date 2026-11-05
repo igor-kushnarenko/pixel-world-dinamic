@@ -28,6 +28,8 @@ export function mountInterface(icon: (name: 'cloud'|'sound'|'lamp'|'menu'|'full'
   const full=el('fullscreen');full.className='dock-action dock-fullscreen';full.innerHTML=`${icon('full')}<span>Экран</span>`;dock.append(full);
   panel.after(dock);
   panes.get('scene')!.append(view,moods,weather);
+  const random=document.createElement('button');random.id='random-weather';random.className='random-weather';random.textContent='Случайная погода · P';random.title='Согласованное сочетание времени суток, облаков, осадков и тумана';panes.get('scene')!.insertBefore(random,weather);
+  const density=document.createElement('label');density.className='slider-row';density.htmlFor='cloud-density';density.innerHTML='<span>Плотность облаков</span><input id="cloud-density" type="range" min="0" max="100"><output id="cloud-density-value">72%</output>';clouds.append(density);
   panes.get('audio')!.append(sound,radio,radioControls);
   const citySound=document.createElement('div');citySound.className='city-sound-controls';citySound.innerHTML='<button id="city-sound-toggle" class="device" aria-pressed="true">Жизнь большого города</button><p class="panel-intro">Далёкий гул, пролетающие электромобили и редкие сирены.</p><label class="slider-row" for="city-volume"><span>Громкость города</span><input id="city-volume" type="range" min="0" max="100"><output id="city-volume-value">65%</output></label>';panes.get('audio')!.insertBefore(citySound,radio);
   panes.get('room')!.append(room,light);

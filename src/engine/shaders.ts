@@ -26,16 +26,24 @@ float fbm(vec2 p) {
 `;
 export const skyFragment = common + /* glsl */`
 uniform vec3 uTop, uBottom;
-uniform float uGlow, uStars, uNight, uDither;
+uniform float uGlow, uStars, uNight, uDither, uTime, uOvercast;
 void main() {
   vec2 p=floor(vUv*uResolution);
   float d = (mod(p.x,2.0)*2.0+mod(p.y,2.0)-1.5)/4.0;
   float h=quant(pow(1.0-vUv.y,0.8)+d*uDither/uSteps,uSteps);
   vec3 c=mix(uTop,uBottom,h);
   float glow=quant(pow(1.0-vUv.y,3.0),8.0)*uGlow;
-  c+=glow*vec3(0.21,0.14,0.29);
-  float stars=step(0.9985,hash(p))*step(0.35,vUv.y)*uStars*uNight;
-  c+=stars*vec3(0.38,0.43,0.55);
+  c+=glow*vec3(0.21,0.14,0.29)*uNight;
+  vec3 gray=mix(vec3(0.20,0.26,0.34),vec3(0.48,0.55,0.62),h)*(1.0-uNight*0.88);
+  c=mix(c,gray,uOvercast);
+  // Star coordinates never depend on time. Only brightness changes smoothly.
+  vec2 cell=floor(p/22.0),local=mod(p,22.0);
+  float id=hash(cell+vec2(19.0,7.0));
+  vec2 offset=floor(vec2(hash(cell+vec2(3.0,11.0)),hash(cell+vec2(31.0,5.0)))*20.0)+1.0;
+  float point=(1.0-step(0.5,abs(local.x-offset.x)))*(1.0-step(0.5,abs(local.y-offset.y)));
+  float twinkle=0.68+0.32*sin(uTime*(0.7+id*1.3)+id*39.0);
+  float stars=point*step(0.82,id)*smoothstep(0.28,0.7,vUv.y)*uStars*uNight*(1.0-uOvercast);
+  c+=stars*twinkle*vec3(0.8,0.88,1.0);
   c+=uFlash*vec3(0.32,0.38,0.48);
   gl_FragColor=vec4(c,windowAt(vUv));
 }

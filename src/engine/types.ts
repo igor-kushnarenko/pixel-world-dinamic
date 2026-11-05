@@ -23,7 +23,7 @@ export interface AtmosphereParameters {
   life: { beacons: boolean; traffic: number; windowDrops: boolean };
   seed: number;
   timeOfDay: number;
-  sky: { palette: PaletteName; starsEnabled: boolean; moonEnabled: false; horizonGlow: number };
+  sky: { palette: PaletteName; starsEnabled: boolean; moonEnabled: false; horizonGlow: number; overcast:number };
   clouds: {
     enabled: boolean; coverage: number; density: number; scale: number;
     windSpeed: number; windDirectionDeg: number;

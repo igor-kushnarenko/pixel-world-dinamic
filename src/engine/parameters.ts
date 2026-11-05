@@ -3,7 +3,7 @@ import type { AtmosphereParameters, ParameterPatch, PaletteName } from './types'
 export const DEFAULT_PARAMETERS: AtmosphereParameters = {
   presetVersion: 1, seed: 712, timeOfDay: 22,
   life: { beacons: false, traffic: 0, windowDrops: false },
-  sky: { palette: 'cyberpunk_night', starsEnabled: false, moonEnabled: false, horizonGlow: 0.15 },
+  sky: { palette: 'cyberpunk_night', starsEnabled: false, moonEnabled: false, horizonGlow: 0.15, overcast:0 },
   clouds: {
     enabled: false, coverage: 0, density: 0.35, scale: 1, windSpeed: 0.25, windDirectionDeg: 0,
     layers: {
@@ -55,7 +55,7 @@ export function resolveParameters(patch: ParameterPatch = {}, base = DEFAULT_PAR
   if (p.render.sampling !== 'nearest' || p.render.pixelGrid !== 'match_scene_assets') throw new Error('Pixel grid must match scene assets; sampling must be nearest');
   range(p.seed, 0, 65535, 'seed', true); range(p.timeOfDay, 0, 24, 'timeOfDay');
   range(p.life.traffic, 0, 1, 'life.traffic');
-  range(p.sky.horizonGlow, 0, 1, 'sky.horizonGlow');
+  range(p.sky.horizonGlow, 0, 1, 'sky.horizonGlow');range(p.sky.overcast,0,1,'sky.overcast');
   for (const key of ['coverage', 'density', 'windSpeed'] as const) range(p.clouds[key], 0, 1, `clouds.${key}`);
   range(p.clouds.scale, 0.25, 4, 'clouds.scale'); range(p.clouds.windDirectionDeg, -360, 360, 'clouds.windDirectionDeg');
   for (const [name, layer] of Object.entries(p.clouds.layers)) {
@@ -88,8 +88,8 @@ const stops = [
   { t: 0, top: '#07091b', bottom: '#24233f', cloud: '#34344f', ambient: 0.05 },
   { t: 4.5, top: '#0d1026', bottom: '#34304d', cloud: '#49415a', ambient: 0.12 },
   { t: 6, top: '#33385b', bottom: '#bd7c7f', cloud: '#a3778b', ambient: 0.55 },
-  { t: 8, top: '#345d82', bottom: '#9eb8c2', cloud: '#c2ccd4', ambient: 0.9 },
-  { t: 16, top: '#355b7e', bottom: '#90a6b3', cloud: '#bbc6cd', ambient: 0.85 },
+  { t: 8, top: '#125bb8', bottom: '#91d6fa', cloud: '#c2ccd4', ambient: 0.9 },
+  { t: 16, top: '#1555b0', bottom: '#8bcef4', cloud: '#bbc6cd', ambient: 0.85 },
   { t: 18, top: '#302d53', bottom: '#b76b6e', cloud: '#8f617a', ambient: 0.5 },
   { t: 20, top: '#11132c', bottom: '#44334f', cloud: '#49405e', ambient: 0.13 },
   { t: 22, top: '#080b20', bottom: '#24233e', cloud: '#34354e', ambient: 0.05 },

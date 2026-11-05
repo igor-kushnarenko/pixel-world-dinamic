@@ -51,3 +51,5 @@
 .crt-seek{top:72%;height:9%}.crt-seek span{display:none}.crt-volume{top:84%;height:10%}.crt-volume output{min-width:24px;text-align:right}
 .computer-media-controls input{pointer-events:auto;flex:1;min-width:0;height:4px;margin:0;touch-action:none}.computer-media-controls input::-webkit-slider-thumb{height:8px;width:5px}
 .computer-media-controls[data-kind=video] .crt-player-controls{opacity:0;transition:opacity .15s}.computer-media-controls[data-kind=video]:hover .crt-player-controls,.computer-media-controls[data-kind=video]:focus-within .crt-player-controls{opacity:1}
+
+.random-weather{width:100%;margin:14px 0 0;padding:10px;border:1px solid #a2cfdf4a;background:#233e4d99;border-radius:8px;color:#c8e2e8}.random-weather:hover{background:#315464}

@@ -1,0 +1,10 @@
+import {describe,it,expect} from 'vitest';
+import {randomWeatherPreset,paletteAt,resolveParameters} from '../src/engine';
+import {normalizeSettings,DEFAULT_SETTINGS} from '../src/experience/settings';
+describe('coherent weather generator',()=>{
+ it('is deterministic and spans all supported conditions',()=>{const kinds=new Set();for(let seed=0;seed<300;seed++){const next=randomWeatherPreset(seed*7919);expect(next).toEqual(randomWeatherPreset(seed*7919));kinds.add(next.kind)}expect(kinds.size).toBe(6)});
+ it('never combines precipitation with clear sunny skies or dense fog with fast wind',()=>{for(let seed=0;seed<800;seed++){const {kind,parameters:p}=randomWeatherPreset(seed*7919);expect(()=>resolveParameters(p)).not.toThrow();if(p.weather.rain>0){expect(p.clouds.enabled).toBe(true);expect(p.clouds.coverage).toBeGreaterThan(.85);expect(p.clouds.density).toBeGreaterThan(.8);expect(p.sky.overcast).toBeGreaterThan(.8)}if(kind==='clear'){expect(p.weather.rain).toBe(0);expect(p.clouds.enabled).toBe(false)}if(kind==='mist')expect(p.clouds.windSpeed).toBeLessThan(.13);expect(p.weather.stormEnabled).toBe(kind==='storm')}});
+ it('creates an independent atmospheric layer for every scene layer',()=>{const p=randomWeatherPreset(90,['back','front','nearest']).parameters;expect(Object.keys(p.weather.layers)).toEqual(['back','front','nearest']);expect(p.weather.layers.back).not.toBe(p.weather.layers.front)});
+ it('keeps day blue and the horizon lighter than the zenith',()=>{const p=paletteAt(12,'cyberpunk_night');expect(p.top[2]).toBeGreaterThan(p.top[0]*2);expect(p.bottom[2]).toBeGreaterThan(p.top[2]);expect(p.bottom.reduce((a,b)=>a+b)).toBeGreaterThan(p.top.reduce((a,b)=>a+b))});
+ it('restores the generated cloud geometry and density from saved preferences',()=>{const p=randomWeatherPreset(12984).parameters;const s=normalizeSettings({...DEFAULT_SETTINGS,timeOfDay:p.timeOfDay,cloudDensity:p.clouds.density,cloudLayers:p.clouds.layers,atmosphereSeed:p.seed});expect(s.timeOfDay).toBe(p.timeOfDay);expect(s.cloudDensity).toBe(p.clouds.density);expect(s.cloudLayers).toEqual(p.clouds.layers);expect(s.atmosphereSeed).toBe(p.seed)});
+});

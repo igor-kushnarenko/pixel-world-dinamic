@@ -147,7 +147,7 @@ export class AtmosphereEngine {
     this.outputMaterial.uniforms.uGlassMask.value = this.windowTexture;
     this.pass('sky', skyFragment, 0, true, {
       uTop: { value: [0, 0, 0] }, uBottom: { value: [0, 0, 0] }, uGlow: { value: 0 },
-      uStars: { value: 0 }, uNight: { value: 1 }, uDither: { value: 0 }
+      uTime:{value:0},uOvercast:{value:0},uStars: { value: 0 }, uNight: { value: 1 }, uDither: { value: 0 }
     });
     for (const name of ['far', 'low'] as const) {
       const offset = new Vector2();
@@ -370,7 +370,7 @@ export class AtmosphereEngine {
     }
     const sky = this.passes[0].uniforms;
     sky.uTop.value = colors.top; sky.uBottom.value = colors.bottom; sky.uGlow.value = p.sky.horizonGlow;
-    sky.uStars.value = p.sky.starsEnabled ? 1 : 0; sky.uNight.value = 1 - colors.ambient; sky.uDither.value = p.render.dithering ? 1 : 0;
+    sky.uStars.value = p.sky.starsEnabled && p.weather.rain===0 && !p.weather.stormEnabled && p.sky.overcast<0.5 ? 1 : 0; sky.uNight.value = Math.max(0,Math.min(1,(0.42-colors.ambient)/0.3));sky.uOvercast.value=Math.max(p.sky.overcast,p.weather.stormEnabled?0.95:p.weather.rain>0?0.65+p.weather.rain*0.3:0); sky.uDither.value = p.render.dithering ? 1 : 0;
     for (const cloud of this.clouds) {
       const layer = p.clouds.layers[cloud.name], u = cloud.uniforms;
       cloud.mesh.visible = cloud.userVisible && p.clouds.enabled && layer.enabled && layer.thickness > 0 && p.clouds.coverage > 0;

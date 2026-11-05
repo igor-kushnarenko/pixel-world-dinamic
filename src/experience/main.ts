@@ -1,3 +1,4 @@
+import { randomWeatherPreset, WEATHER_NAMES, DEFAULT_PARAMETERS } from '../engine';
 import { isMediaOpen } from './mediaViewer';
 import { mountComputer } from './computerObject';
 import { mountRadio } from './roomObjects';
@@ -61,7 +62,7 @@ app.innerHTML = `
       <details class="menu-section"><summary>Дымка и туман по планам <span>+</span></summary><div id="atmosphere-controls"></div></details>
       <div class="view-selector"><button id="view-prev" class="plain-icon backwards" aria-label="Предыдущий вид города">${svg('arrow')}</button><span id="view-name">Панорама</span><button id="view-next" class="plain-icon" aria-label="Следующий вид города">${svg('arrow')}</button></div>
       <div class="menu-section sound-section"><div class="sound-heading"><button id="sound-toggle" aria-pressed="false">${svg('sound')}<span id="sound-label">Без звука</span></button><button id="fullscreen" class="plain-icon" aria-label="На весь экран">${svg('full')}</button></div><label class="slider-row" for="master-volume"><span>Общая громкость</span><input id="master-volume" type="range" min="0" max="100" value="40"><output id="master-volume-value">40%</output></label><output id="audio-status" class="audio-status" data-state="locked">Звук включается только с вашего разрешения</output></div>
-      <div class="menu-footer"><button id="reset-scene">Вернуть тихую ночь</button><a href="${base}?mode=lab">Мастерская ↗</a></div><p class="key-hints">← / → — вид · L / K — свет · R — радио · M — звук · Esc — закрыть</p>
+      <div class="menu-footer"><button id="reset-scene">Вернуть тихую ночь</button><a href="${base}?mode=lab">Мастерская ↗</a></div><p class="key-hints">P — новая погода · ← / → — вид · L / K — свет · R — радио · M — звук · Esc — закрыть</p>
     </section>
     <div id="scene-toast" class="scene-toast" role="status" aria-live="polite"></div>
   </main>`;
@@ -81,7 +82,7 @@ const tuner = new Tuner({ audio, onName: (name: string | null) => {
 } });
 const moodNames: Record<SkyMood, string> = { night: 'Ясная ночь', dusk: 'Сумерки', day: 'Дневной город', storm: 'Гроза над городом' };
 const timeFor: Record<SkyMood, number> = { night: 22, dusk: 18.4, day: 12, storm: 22 };
-let shownTime = timeFor[settings.sky], targetTime = shownTime;
+let shownTime = settings.timeOfDay, targetTime = shownTime;
 let lastAppliedTime = shownTime;
 let lastLightLevel = -1;
 let flight = new PanoramaFlight(settings.city);
@@ -106,12 +107,12 @@ function syncUI() {
   active('lamp-left', settings.left); active('lamp-right', settings.right); active('radio-toggle', radioOn);
   active('cloud-toggle', settings.clouds); active('rain-toggle', settings.rain > 0); active('sound-toggle', soundEnabled);
   $('sound-label').textContent = soundEnabled ? 'Звук включён' : 'Без звука';
-  for (const [id, value] of [['rain-level', settings.rain], ['city-lights', settings.lights], ['cloud-coverage', settings.coverage], ['wind-speed', settings.cloudSpeed], ['master-volume', settings.volume], ['radio-volume', settings.radioVolume]] as const) {
+  for (const [id, value] of [['rain-level', settings.rain], ['city-lights', settings.lights], ['cloud-coverage', settings.coverage], ['wind-speed', settings.cloudSpeed], ['cloud-density',settings.cloudDensity], ['master-volume', settings.volume], ['radio-volume', settings.radioVolume]] as const) {
     $<HTMLInputElement>(id).value = String(Math.round(value * 100)); $(id + '-value').textContent = `${Math.round(value * 100)}%`;
   }
   $('view-name').textContent = CITY_LAYOUTS[settings.city].name;
-  const moodLabel = settings.sky === 'night' && settings.clouds ? 'Облачная ночь' : moodNames[settings.sky];
-  $('mood-status').textContent = `Сцена · ${Math.floor(timeFor[settings.sky]).toString().padStart(2, '0')}:${settings.sky === 'dusk' ? '24' : '00'} · ${moodLabel}${settings.rain > 0 && settings.sky !== 'storm' ? ' · Дождь' : ''}`;
+  const moodLabel = settings.condition!=='custom'?WEATHER_NAMES[settings.condition]:settings.sky === 'night' && settings.clouds ? 'Облачная ночь' : moodNames[settings.sky];
+  $('mood-status').textContent = `Сцена · ${String(Math.floor(targetTime)%24).padStart(2,'0')}:${String(Math.floor(targetTime%1*60)).padStart(2,'0')} · ${moodLabel}`;
   $('hit-left').setAttribute('aria-label', `${settings.left ? 'Выключить' : 'Включить'} лампу`);
   $('hit-right').setAttribute('aria-label', `${settings.right ? 'Выключить' : 'Включить'} настенную панель`);
   $('hit-radio').setAttribute('aria-label', `${radioOn ? 'Выключить' : 'Включить'} радио`);
@@ -141,18 +142,26 @@ async function enableSound() {
 }
 function applyEnvironment() {
   engine.setParameters({
+    seed:settings.atmosphereSeed,
     life: { beacons: settings.beacons, traffic: settings.traffic, windowDrops: settings.windowDrops },
-    clouds: { enabled: settings.clouds, coverage: settings.coverage, density: 0.72, scale: 0.3, windSpeed: settings.cloudSpeed },
-    weather: { rain: settings.rain, stormEnabled: settings.sky === 'storm', fog: 0, layers: settings.atmosphere },
+    sky:{starsEnabled:true,overcast:settings.overcast},
+    clouds: { enabled: settings.clouds, coverage: settings.coverage, density: settings.cloudDensity, scale: settings.cloudScale, windSpeed: settings.cloudSpeed,windDirectionDeg:settings.windDirection,layers:settings.cloudLayers },
+    weather: { rain: settings.rain, stormEnabled: settings.stormEnabled, fog: 0, layers: settings.atmosphere },
     lighting: { cityLightsIntensity: settings.lights, interiorLightsEnabled: settings.left || settings.right, radioBacklightEnabled: radioOn,computerEnabled:settings.computer }
   });
   lastLightLevel = -1;
   syncUI(); saveSettings(settings);
 }
 function changeMood(mood: SkyMood) {
-  settings.sky = mood; targetTime = timeFor[mood];
+  settings.sky = mood;targetTime = settings.timeOfDay = timeFor[mood];settings.condition='custom';settings.overcast=mood==='storm'?.95:0;settings.stormEnabled=mood==='storm';settings.cloudLayers=structuredClone(DEFAULT_PARAMETERS.clouds.layers);
+  if(mood!=='storm')settings.rain=0;
   if (mood === 'storm') { settings.clouds = true; settings.coverage = Math.max(0.85, settings.coverage); settings.rain = Math.max(0.5, settings.rain); }
   applyEnvironment(); audio.click(); notify(moodNames[mood]);
+}
+function randomizeWeather(){
+  const seed=crypto.getRandomValues(new Uint32Array(1))[0];const next=randomWeatherPreset(seed,Object.keys(settings.atmosphere)),p=next.parameters;
+  settings.timeOfDay=targetTime=p.timeOfDay;settings.sky=p.weather.stormEnabled?'storm':p.timeOfDay>=8&&p.timeOfDay<17?'day':p.timeOfDay>=20||p.timeOfDay<5?'night':'dusk';settings.condition=next.kind;
+  settings.clouds=p.clouds.enabled;settings.coverage=p.clouds.coverage;settings.cloudDensity=p.clouds.density;settings.cloudScale=p.clouds.scale;settings.cloudSpeed=p.clouds.windSpeed;settings.windDirection=p.clouds.windDirectionDeg;settings.cloudLayers=p.clouds.layers;settings.rain=p.weather.rain;settings.stormEnabled=p.weather.stormEnabled;settings.overcast=p.sky.overcast;settings.atmosphere=p.weather.layers;settings.atmosphereSeed=p.seed;applyEnvironment();audio.click();notify(next.name+' · новая погода');
 }
 function setLamp(which: 'left' | 'right') { settings[which] = !settings[which]; applyEnvironment(); audio.click(); notify(`${which === 'left' ? 'Лампа' : 'Панель'} ${settings[which] ? 'включена' : 'выключена'}`); }
 async function toggleRadio() {
@@ -233,6 +242,7 @@ async function main() {
   $('enter-sound').onclick = () => { void enter(true); }; $('enter-quiet').onclick = () => { void enter(false); };
   $('menu-toggle').onclick = () => navigation.open('scene'); $('menu-close').onclick = () => menu(false);
   document.querySelectorAll<HTMLButtonElement>('[data-mood]').forEach(b => b.onclick = () => changeMood(b.dataset.mood as SkyMood));
+  $('random-weather').onclick=randomizeWeather;
   $('lamp-left').onclick = () => setLamp('left'); $('hit-left').onclick = () => setLamp('left');
   $('lamp-right').onclick = () => setLamp('right'); $('hit-right').onclick = () => setLamp('right');
   $('radio-toggle').onclick = () => { void toggleRadio(); }; $('hit-radio').onclick = () => { void toggleRadio(); };
@@ -255,7 +265,7 @@ async function main() {
   $('drops-toggle').onclick=()=>{settings.windowDrops=!settings.windowDrops;applyEnvironment();};
   $<HTMLInputElement>('traffic-level').oninput=e=>{settings.traffic=Number((e.target as HTMLInputElement).value)/100;applyEnvironment();};
   $('rain-toggle').onclick = () => { settings.rain = settings.rain > 0 ? 0 : 0.5; applyEnvironment(); };
-  for (const [id, key] of [['rain-level', 'rain'], ['city-lights', 'lights'], ['cloud-coverage', 'coverage'], ['wind-speed', 'cloudSpeed'], ['master-volume', 'volume'], ['radio-volume', 'radioVolume']] as const) {
+  for (const [id, key] of [['rain-level', 'rain'], ['city-lights', 'lights'], ['cloud-coverage', 'coverage'], ['wind-speed', 'cloudSpeed'],['cloud-density','cloudDensity'], ['master-volume', 'volume'], ['radio-volume', 'radioVolume']] as const) {
     $<HTMLInputElement>(id).oninput = e => { settings[key] = Number((e.target as HTMLInputElement).value) / 100; applyEnvironment(); };
   }
   $('view-prev').onclick = () => changeView(-1); $('view-next').onclick = () => changeView(1);
@@ -286,7 +296,8 @@ async function main() {
       wake(); return;
     }
     const key = e.key.toLowerCase();
-    if(key==='c'||key==='с')toggleComputer();
+    if(key==='p'||key==='з'){if(!e.repeat)randomizeWeather();}
+    else if(key==='c'||key==='с')toggleComputer();
     else if (key === 'l' || key === 'д') setLamp('left'); else if (key === 'k' || key === 'л') setLamp('right');
     else if (key === 'r' || key === 'к') void toggleRadio(); else if (key === 'n' || key === 'т') { if (radioOn) tuner.turn(1); }
     else if (key === 'm' || key === 'ь') $('sound-toggle').click(); else if (key === 'f' || key === 'а') $('fullscreen').click();
@@ -297,8 +308,8 @@ async function main() {
     if (disposed) return;
     const dt = frameDeltaSeconds(now, previous); previous = now;
     if(!document.hidden){
-      computerObject.update(settings.computer,ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient).room[0],shutter,roomRight,roomLeft);
-      radioObject.update(radioOn,ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient).room[0],shutter,roomRight,roomLeft);
+      computerObject.update(settings.computer,ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient,settings.overcast).room[0],shutter,roomRight,roomLeft);
+      radioObject.update(radioOn,ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient,settings.overcast).room[0],shutter,roomRight,roomLeft);
       if(shutterDirection){shutter=shutterStep(shutter,shutterDirection,dt);settings.shutter=shutter;audio.setOcclusion(shutter,settings.citySound);citySound?.set(settings.citySound,settings.cityVolume,shutter);$<HTMLInputElement>('shutter-level').value=String(Math.round(shutter*100));$('shutter-level-value').textContent=`${Math.round(shutter*100)}%`;if(shutter===0||shutter===1)stopShutter();}
       engine.setWindowShutter(shutter,[roomLeft,roomRight,roomRadio,roomComputer]);
     }
@@ -315,14 +326,14 @@ async function main() {
       roomRadio += ((radioOn ? 1 : 0) - roomRadio) * a;
       roomComputer+=((settings.computer?1:0)-roomComputer)*a;engine.setComputerLevel('apartment',roomComputer);
       engine.setRoomLightLevels('apartment', roomLeft, roomRight, roomRadio);
-      const lighting = ambientLighting(shownTime, settings.sky, settings.city, flight.roomAmbient);
+      const lighting = ambientLighting(shownTime, settings.sky, settings.city, flight.roomAmbient, settings.overcast);
       const daylight = lighting.daylight;
       engine.setLayerTint('apartment', lighting.room.map(c=>c*exteriorVisibility(shutter))as[number,number,number]);
       for (const id of ['far', 'midfar', 'midnear', 'near']) engine.setLayerTint(id, lighting.city);
       const lights = settings.lights * (1 - daylight * 0.65);
       if (Math.abs(lights - lastLightLevel) > 0.002) { lastLightLevel = lights; engine.setParameters({ lighting: { cityLightsIntensity: lights } }); }
       engine.update(dt);
-    } else if (query.has('paused')) {roomComputer=settings.computer?1:0;roomLeft=settings.left?1:0;roomRight=settings.right?1:0;roomRadio=radioOn?1:0;engine.setComputerLevel('apartment',roomComputer); engine.setRoomLightLevels('apartment',roomLeft,roomRight,roomRadio);engine.setWindowShutter(shutter,[roomLeft,roomRight,roomRadio,roomComputer]);const lighting=ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient);engine.setLayerTint('apartment',lighting.room.map(c=>c*exteriorVisibility(shutter))as[number,number,number]); engine.render(); }
+    } else if (query.has('paused')) {if(shownTime!==targetTime){shownTime=targetTime;engine.setParameters({timeOfDay:shownTime})}roomComputer=settings.computer?1:0;roomLeft=settings.left?1:0;roomRight=settings.right?1:0;roomRadio=radioOn?1:0;engine.setComputerLevel('apartment',roomComputer); engine.setRoomLightLevels('apartment',roomLeft,roomRight,roomRadio);engine.setWindowShutter(shutter,[roomLeft,roomRight,roomRadio,roomComputer]);const lighting=ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient,settings.overcast);engine.setLayerTint('apartment',lighting.room.map(c=>c*exteriorVisibility(shutter))as[number,number,number]); engine.render(); }
     frameId = requestAnimationFrame(frame);
   }
   frameId = requestAnimationFrame(frame);

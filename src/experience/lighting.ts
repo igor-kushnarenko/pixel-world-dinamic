@@ -4,9 +4,9 @@ import type { CityId } from './config';
 import type { SkyMood } from './settings';
 
 /** Ambient light only: local lamps and city emitters keep their own intensity. */
-export function ambientLighting(time: number, mood: SkyMood, city: CityId, roomAmbient = CITY_LAYOUTS[city].roomAmbient) {
+export function ambientLighting(time: number, mood: SkyMood, city: CityId, roomAmbient = CITY_LAYOUTS[city].roomAmbient,overcast=0) {
   const daylight = paletteAt(time, 'cyberpunk_night').ambient;
-  const storm = mood === 'storm' ? 0.8 : 1;
+  const storm = (mood === 'storm' ? 0.8 : 1)*(1-Math.max(0,Math.min(1,overcast))*.35);
   const room = (0.36 + daylight * 0.64) * storm * roomAmbient;
   const buildings = (0.38 + daylight * 0.62) * storm;
   return {
