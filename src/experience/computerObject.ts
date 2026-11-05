@@ -17,7 +17,7 @@ export async function mountComputer(host:HTMLElement,toggle:()=>void,screen:HTML
  const glass=document.createElement('span');glass.className='computer-glass';button.append(glass);
  const power=document.createElement('span');power.className='computer-power';power.title='Включить / выключить компьютер';button.append(power);
  const objectPlane=document.createElement('div');objectPlane.className='room-object-plane';host.append(objectPlane);objectPlane.append(button);
- const mask=`url("${import.meta.env.BASE_URL}assets/room-v3/prepared/object-visibility.png")`;objectPlane.style.maskImage=mask;objectPlane.style.webkitMaskImage=mask;
+ const mask=`url("${import.meta.env.BASE_URL}assets/room-v4/prepared/object-visibility.png")`;objectPlane.style.maskImage=mask;objectPlane.style.webkitMaskImage=mask;
  const enter=document.createElement('span');enter.className='computer-enter';enter.title='Enter — файловый менеджер';button.append(enter);
  const esc=document.createElement('span');esc.className='computer-esc';esc.title='Esc — назад';button.append(esc);
  const arrowKeys=new Map<EventTarget,string>();

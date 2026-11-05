@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "file": "originals/room-base.png",
+      "source": "Изображение ChatGPT 5 нояб. 2026 г., 23_28_58-1.png",
+      "sha256": "cae4333e0a230ca57fb90061593525c2dcd8c20e638712dff8b3a677bbffd122"
+    },
+    {
+      "file": "originals/sill-foreground.png",
+      "source": "Изображение ChatGPT 5 нояб. 2026 г., 23_29_07-2.png",
+      "sha256": "142400c0847fde7aca93e41bc4c9773a92129f564ee503405d3184cc1e60b542"
+    },
+    {
+      "file": "originals/shutter-housing.png",
+      "source": "Изображение ChatGPT 5 нояб. 2026 г., 23_29_09-3.png",
+      "sha256": "e25970c7f68245796c09ffe83b79e66bb1d83bf0d54376b77254407202ca6ca7"
+    },
+    {
+      "file": "originals/shutter-slats.png",
+      "source": "Изображение ChatGPT 5 нояб. 2026 г., 23_29_11-4.png",
+      "sha256": "08c6738828f75cbe67a2e53adbf3b467a68542d8111ee545da984a39a8a54e22"
+    },
+    {
+      "file": "originals/wall-light-mask.png",
+      "source": "Изображение ChatGPT 5 нояб. 2026 г., 23_29_12-5.png",
+      "sha256": "fef8f4b968820dbb14031cb62349e9086463b0353aeec0165c8bdcb0193bf27a"
+    },
+    {
+      "file": "originals/shelf-light-mask.png",
+      "source": "Изображение ChatGPT 5 нояб. 2026 г., 23_29_14-6.png",
+      "sha256": "cd0239c1b32a62df029a0a3466f34dce1d5de78625efa594c14e53beb1dcd8c6"
+    }
+  ]
+}
