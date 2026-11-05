@@ -4,3 +4,9 @@ export type { AtmosphereParameters, LayerAtmosphere, CloudPlane, DeepPartial, En
 
 export { randomWeatherPreset, WEATHER_NAMES } from './randomWeather';
 export type { WeatherKind } from './randomWeather';
+
+export {createSpriteMaterial,sampleSpriteLight,windowTransmission} from './spriteLighting';
+export type {SpriteLight,SpriteLightingState} from './spriteLighting';
+export const ATMOSPHERE_ENGINE_VERSION='0.3.0';
+export {resolveShutter} from './shutter';
+export type {ShutterDefinition,ShutterLight} from './types';

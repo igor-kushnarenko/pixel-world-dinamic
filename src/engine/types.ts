@@ -75,7 +75,7 @@ export interface LightMask {
   pulse?: { amount: number; periodSeconds: number };
 }
 export interface SceneDefinition {
-  shutter?: { top:number; bottom:number; depth:number; texture?:TextureSource };
+  shutter?: ShutterDefinition;
   width: number; height: number;
   layers?: ImageLayer[];
   lights?: LightMask[];
@@ -101,3 +101,6 @@ export interface EngineDiagnostics {
   drawCalls: number; running: boolean; time: number;
   layers: { id: string; depth: number; visible: boolean }[];
 }
+
+export interface ShutterLight {x:number;y:number;radiusX:number;radiusY:number}
+export interface ShutterDefinition {top:number;bottom:number;depth:number;texture?:TextureSource;left?:number;right?:number;texturePeriod?:number;interiorLights?:readonly [ShutterLight,ShutterLight,ShutterLight,ShutterLight]}

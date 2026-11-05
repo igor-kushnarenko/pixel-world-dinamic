@@ -141,3 +141,8 @@ engine.importPreset(saved);
 `engine.setWindowShutter(closed, [leftLamp,rightLamp,radio,computer])` принимает закрытие 0…1 и уровни четырёх внутренних источников 0…1. Управляет покрытием окна, отражённым внутренним светом, подавлением внешних отражений/вспышек комнаты и скрытием внешних капель. Host отдельно умножает ambient tint комнаты на `(1-closed)^1.4`, сохраняя независимость собственных световых карт. Положение роллета относится к состоянию локации, не к погодному пресету; приложение сохраняет его в своих настройках.
 
 Городской звук находится в `src/experience/citySound.ts`: отдельный Web Audio bus с `set(enabled, volume, closed)` и `dispose()`. Он подключается к общему master, а его low-pass и gain изменяются при закрытии окна. Внутреннее радио проходит напрямую в master. В тесте OfflineAudioContext проверяются ненулевой сигнал, полная тишина при выключении и ослабление после закрытия.
+
+
+## Обновление 0.3.0
+
+Актуальные возможности, API света предметов и параметры переносимого роллета описаны в [Atmosphere Engine](ATMOSPHERE_ENGINE.md). Дополнительные методы: `setLayerPlacement`, `setLayerTint`, `setRoomLightLevels`, `setComputerLevel`, `setWindowShutter`. Их аргументы определены в поставляемых TypeScript declarations.

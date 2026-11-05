@@ -23,7 +23,7 @@ export async function createApartmentLocation(city: CityId, _computerScreen?:HTM
   const ids = ['far', 'midfar', 'midnear', 'near'];
   const files = ['city-far', 'city-mid-far', 'city-mid-near', 'city-near'];
   return {
-    width: WIDTH, height: HEIGHT, windowMask: await windowMask(room), fogDepth: 50, rainDepth: 90,shutter:{top:121,bottom:749,depth:99,texture:`${prepared}shutter-tile.png`},
+    width: WIDTH, height: HEIGHT, windowMask: await windowMask(room), fogDepth: 50, rainDepth: 90,shutter:{top:121,bottom:749,depth:99,left:240,right:1579,texturePeriod:78,interiorLights:[{x:112,y:707,radiusX:900,radiusY:650},{x:1575,y:350,radiusX:1000,radiusY:700},{x:1340,y:740,radiusX:300,radiusY:200},{x:470,y:740,radiusX:350,radiusY:250}],texture:`${prepared}shutter-tile.png`},
     layers: [
       ...ids.map((id, i) => ({
         id, source: `${originals}${files[i]}.png`, depth: 20 + i * 20, scope: 'world' as const,

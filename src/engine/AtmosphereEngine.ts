@@ -1,3 +1,4 @@
+import {resolveShutter} from './shutter';
 import {
   AdditiveBlending, ClampToEdgeWrapping, Color, DataTexture, LinearSRGBColorSpace,
   Mesh, NearestFilter, NoColorSpace, NormalBlending, OrthographicCamera,
@@ -56,7 +57,7 @@ export class AtmosphereEngine {
     const { width, height, layers = [], lights = [] } = options.scene;
     if (![width, height].every(n => Number.isInteger(n) && n >= 1 && n <= 4096)) throw new Error('Scene dimensions must be integer logical pixels, 1…4096');
     const ids = ['sky', 'cloud-far', 'cloud-low', 'fog', 'rain', ...layers.map(l => l.id), ...lights.map(l => l.id)];
-    if(options.scene.shutter){const s=options.scene.shutter;ids.push('shutter');if(!options.scene.windowMask||![s.top,s.bottom,s.depth].every(Number.isFinite)||s.top<0||s.bottom>height||s.bottom<=s.top||s.depth<=0||s.depth>=1000)throw new Error('Invalid shutter definition');}
+    if(options.scene.shutter){ids.push('shutter');if(!options.scene.windowMask)throw new Error('Shutter requires window mask');resolveShutter(options.scene.shutter,width,height);}
     ids.push(...layers.filter(l => l.scope === 'world').map(l => `atmosphere-${l.id}`));
     ids.push(...layers.filter(l => l.scope === 'world').map(l => `traffic-${l.id}`));
     ids.push(...layers.filter(l => l.scope === 'world' && l.closeTraffic).map(l => `traffic-close-${l.id}`));
@@ -231,7 +232,11 @@ export class AtmosphereEngine {
       }
     }
     this.prepareAtmosphere(this.parameters);
-    if(scene.shutter)this.pass('shutter',shutterFragment,scene.shutter.depth,true,{uSlatTexture:{value:scene.shutter.texture?await this.texture(scene.shutter.texture):this.windowTexture},uHasSlatTexture:{value:scene.shutter.texture?1:0},uSlatTop:{value:scene.shutter.top},uShutterEdge:{value:-1},uShutterClosed:{value:0},uExteriorAmbient:{value:0},uInterior:{value:new Vector4()}});
+    if(scene.shutter){
+      const texture=scene.shutter.texture?await this.texture(scene.shutter.texture):this.windowTexture;
+      const s=resolveShutter(scene.shutter,this.width,this.height,scene.shutter.texture?((texture.image as {height?:number}).height||9):9);
+      this.pass('shutter',shutterFragment,s.depth,true,{uSlatTexture:{value:texture},uHasSlatTexture:{value:scene.shutter.texture?1:0},uSlatTop:{value:s.top},uSlatPeriod:{value:s.texturePeriod},uSlatBounds:{value:new Vector2(s.left,s.right-s.left)},uShutterLights:{value:s.interiorLights.map(l=>new Vector4(l.x,l.y,l.radiusX,l.radiusY))},uShutterEdge:{value:-1},uShutterClosed:{value:0},uExteriorAmbient:{value:0},uInterior:{value:new Vector4()}});
+    }
   }
 
   private prepareAtmosphere(p: AtmosphereParameters) {
