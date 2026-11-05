@@ -100,7 +100,7 @@ export class AtmosphereEngine {
     this.canvas.style.display = 'block'; this.canvas.style.flexShrink = '0';
     this.windowTexture = this.whiteTexture();
     this.camera.position.z = 1;
-    this.outputMaterial = new ShaderMaterial({ vertexShader: vertex, fragmentShader: outputFragment, uniforms: { uFrame: { value: this.target.texture }, uGlassMask: { value: this.windowTexture }, uGlassResolution: { value: new Vector2(this.width,this.height) }, uDrops: { value: Array.from({length:64},()=>new Vector4()) }, uDropCount: { value: 0 },uShutterEdge:{value:-1} }, depthTest: false, depthWrite: false });
+    this.outputMaterial = new ShaderMaterial({ vertexShader: vertex, fragmentShader: outputFragment, uniforms: { uFrame: { value: this.target.texture }, uGlassMask: { value: this.windowTexture }, uGlassResolution: { value: new Vector2(this.width,this.height) }, uDrops: { value: Array.from({length:64},()=>new Vector4()) }, uWetness:{value:0},uWaterTime:{value:0},uDropCount: { value: 0 },uShutterEdge:{value:-1} }, depthTest: false, depthWrite: false });
     this.output.add(new Mesh(this.geometry, this.outputMaterial));
     options.container.append(this.canvas);
     this.observer = new ResizeObserver(() => this.resize());
@@ -168,7 +168,7 @@ export class AtmosphereEngine {
       if (!layer.placement && (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x + width > this.width || y + height > this.height)) throw new Error(`${layer.id}: native-size art must fit scene at integer coordinates`);
       if (!Number.isFinite(opacity) || opacity < 0 || opacity > 1) throw new Error(`${layer.id}: opacity must be 0…1`);
       const extra: Record<string, IUniform> = {
-        uImage: { value: texture }, uOrigin: { value: new Vector2(x, y) }, uSize: { value: new Vector2(width, height) },
+        uRainBlur: {value:0}, uImage: { value: texture }, uOrigin: { value: new Vector2(x, y) }, uSize: { value: new Vector2(width, height) },
         uOpacity: { value: opacity }, uReceivesFlash: { value: layer.receivesLightning ? 1 : 0 },
         uTint: { value: new Vector3(...(layer.tint ?? [1, 1, 1])) },
         uTime: { value: 0 }, uHasCityMask: { value: layer.cityLightMask ? 1 : 0 },
@@ -401,6 +401,9 @@ export class AtmosphereEngine {
         });
       }
     }
+    for(const layer of this.options.scene.layers??[]){const image=this.imageLayers.get(layer.id);if(image?.pass.uniforms.uRainBlur)image.pass.uniforms.uRainBlur.value=layer.scope==='world'?p.weather.rain*Math.max(0,1-layer.depth/80)*3:0;}
+    this.outputMaterial.uniforms.uWetness.value=p.life.windowDrops?this.drops.wetness:0;
+    this.outputMaterial.uniforms.uWaterTime.value=this.time;
     const drops=p.life.windowDrops && this.options.scene.windowMask ? this.drops.drops : [];
     this.outputMaterial.uniforms.uDropCount.value=drops.length;
     drops.forEach((d,i)=>this.outputMaterial.uniforms.uDrops.value[i].set(d.x,this.height-d.y,Math.sqrt(d.mass),d.speed));

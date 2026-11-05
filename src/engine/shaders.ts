@@ -93,7 +93,7 @@ void main() {
 export const imageFragment = common + /* glsl */`
 uniform sampler2D uImage;
 uniform vec2 uOrigin, uSize;
-uniform float uOpacity, uReceivesFlash;
+uniform float uOpacity, uReceivesFlash,uRainBlur;
 uniform sampler2D uCityMask;
 uniform float uHasCityMask, uCityLights, uTime, uBeacons;
 uniform vec3 uTint;
@@ -102,6 +102,12 @@ void main() {
   if(pos.x<0.0||pos.y<0.0||pos.x>=uSize.x||pos.y>=uSize.y) discard;
   vec2 texUV=vec2(pos.x/uSize.x,1.0-pos.y/uSize.y);
   vec4 c=texture2D(uImage,texUV);
+  if(uRainBlur>0.01){
+    vec2 d=vec2(uRainBlur)/uSize;
+    vec4 a=texture2D(uImage,texUV+vec2(d.x,0.0)),b=texture2D(uImage,texUV-vec2(d.x,0.0)),e=texture2D(uImage,texUV+vec2(0.0,d.y)),f=texture2D(uImage,texUV-vec2(0.0,d.y));
+    float alpha=c.a*4.0+a.a+b.a+e.a+f.a;
+    c=vec4((c.rgb*c.a*4.0+a.rgb*a.a+b.rgb*b.a+e.rgb*e.a+f.rgb*f.a)/max(alpha,0.0001),alpha/8.0);
+  }
   vec3 col=c.rgb*uTint;
   if(uHasCityMask>0.5){
     vec3 m=texture2D(uCityMask,texUV).rgb;
@@ -306,23 +312,33 @@ varying vec2 vUv;
 uniform sampler2D uFrame,uGlassMask;
 uniform vec2 uGlassResolution;
 uniform vec4 uDrops[64];
-uniform float uDropCount;
+uniform float uDropCount,uWetness,uWaterTime;
 uniform float uShutterEdge;
 void main(){
   vec4 base=texture2D(uFrame,vUv);
   if(texture2D(uGlassMask,vUv).r<0.5 || (1.0-vUv.y)*uGlassResolution.y<=uShutterEdge){gl_FragColor=base;return;}
   vec2 pixel=floor(vUv*uGlassResolution)+0.5;
   vec2 shift=vec2(0.0);float rim=0.0;
+  // Dense beads and long meandering rivulets remain attached to the glass.
+  vec2 cell=floor(pixel/vec2(24.0,32.0));
+  float id=fract(sin(dot(cell,vec2(127.1,311.7)))*43758.5453);
+  vec2 bead=mod(pixel,vec2(24.0,32.0))-vec2(4.0+id*16.0,5.0+fract(id*17.0)*22.0);
+  vec2 bq=bead/vec2(1.1+id*1.8,2.0+id*2.6);float bd=dot(bq,bq);
+  if(id>.22&&bd<1.0){shift=bq*3.5;rim=(step(.55,bd)*.17-step(bq.y,0.0)*.055);}
+  float lane=floor(pixel.x/53.0),wave=sin(pixel.y*.018+lane*2.7)*2.0+sin(pixel.y*.053+lane)*.7;
+  float stream=abs(mod(pixel.x,53.0)-26.0-wave);
+  if(stream<1.3){shift+=vec2(sin(pixel.y*.03)*2.5,1.0);rim+=.035;}
   for(int i=0;i<64;i++){
     if(float(i)>=uDropCount) break;
     vec4 drop=uDrops[i];
     vec2 delta=pixel-drop.xy;
     vec2 size=vec2(drop.z,drop.z*(1.2+drop.w*0.015));
     vec2 q=delta/size;float dist=dot(q,q);
-    if(dist<1.0){ shift=q*drop.z*0.65;rim=(step(0.65,dist)*0.1+step(0.88,dist)*0.06)*step(0.0,q.y);break; }
+    if(dist<1.0){ shift=q*drop.z*1.15;rim=(step(0.65,dist)*0.19+step(0.88,dist)*0.12)*step(0.0,q.y);break; }
     // A thin wet wake above each moving droplet.
     if(abs(delta.x+sin(delta.y*0.055+drop.x)*0.65)<1.2 && delta.y>0.0 && delta.y<drop.w*1.1) {shift=vec2(1.5,0.3);rim=max(rim,0.015);}
   }
+  shift*=uWetness;rim*=uWetness;
   vec2 uv=(floor(pixel+shift)+0.5)/uGlassResolution;
   if(texture2D(uGlassMask,uv).r>0.5 && (1.0-uv.y)*uGlassResolution.y>uShutterEdge) base=texture2D(uFrame,uv);
   gl_FragColor=vec4(base.rgb+rim,1.0);

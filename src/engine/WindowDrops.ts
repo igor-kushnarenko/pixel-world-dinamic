@@ -2,12 +2,16 @@ export interface GlassDrop { x: number; y: number; mass: number; speed: number; 
 /** Small seeded, fixed-step simulation; mass is conserved when droplets merge. */
 export class WindowDrops {
   drops: GlassDrop[] = [];
+  wetness=0;
   private state: number;
   private accumulator = 0;
   constructor(private width: number, private height: number, seed: number) { this.state = seed || 1; }
   private random() { this.state = (Math.imul(this.state, 1664525) + 1013904223) >>> 0; return this.state / 4294967296; }
-  reset(seed: number) { this.state = seed || 1; this.drops = []; this.accumulator = 0; }
+  reset(seed: number) { this.state = seed || 1; this.drops = []; this.wetness=0; this.accumulator = 0; }
   update(dt: number, rain: number) {
+    const elapsed=Math.max(0,Math.min(1,dt));
+    this.wetness=rain>0?Math.min(1,this.wetness+elapsed*(.5+rain)):Math.max(0,this.wetness-elapsed/10);
+    if(this.wetness===0&&rain===0)this.drops=[];
     this.accumulator += Math.min(1, dt);
     while (this.accumulator >= 1 / 60) { this.accumulator -= 1 / 60; this.step(rain); }
   }
