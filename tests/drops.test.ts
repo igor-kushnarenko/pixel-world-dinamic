@@ -10,6 +10,6 @@ it('merges nearby water masses and falls down',()=>{
 it('keeps rain repeatable, bounded and does not spawn in dry weather',()=>{
   const a=new WindowDrops(1672,941,7),b=new WindowDrops(1672,941,7);
   for(let i=0;i<600;i++){a.update(1/60,1);b.update(1/60,1);}
-  expect(a.drops).toEqual(b.drops);expect(a.drops.length).toBeGreaterThan(0);expect(a.drops.length).toBeLessThanOrEqual(32);
+  expect(a.drops).toEqual(b.drops);expect(a.drops.length).toBeGreaterThan(0);expect(a.drops.length).toBeLessThanOrEqual(64);
   a.reset(7);a.update(1,0);expect(a.drops).toEqual([]);
 });

@@ -305,7 +305,7 @@ precision highp float;
 varying vec2 vUv;
 uniform sampler2D uFrame,uGlassMask;
 uniform vec2 uGlassResolution;
-uniform vec4 uDrops[32];
+uniform vec4 uDrops[64];
 uniform float uDropCount;
 uniform float uShutterEdge;
 void main(){
@@ -313,7 +313,7 @@ void main(){
   if(texture2D(uGlassMask,vUv).r<0.5 || (1.0-vUv.y)*uGlassResolution.y<=uShutterEdge){gl_FragColor=base;return;}
   vec2 pixel=floor(vUv*uGlassResolution)+0.5;
   vec2 shift=vec2(0.0);float rim=0.0;
-  for(int i=0;i<32;i++){
+  for(int i=0;i<64;i++){
     if(float(i)>=uDropCount) break;
     vec4 drop=uDrops[i];
     vec2 delta=pixel-drop.xy;
@@ -321,7 +321,7 @@ void main(){
     vec2 q=delta/size;float dist=dot(q,q);
     if(dist<1.0){ shift=q*drop.z*0.65;rim=(step(0.65,dist)*0.1+step(0.88,dist)*0.06)*step(0.0,q.y);break; }
     // A thin wet wake above each moving droplet.
-    if(abs(delta.x)<0.65 && delta.y>0.0 && delta.y<drop.w*0.25) shift=vec2(1.0,0.0);
+    if(abs(delta.x+sin(delta.y*0.055+drop.x)*0.65)<1.2 && delta.y>0.0 && delta.y<drop.w*1.1) {shift=vec2(1.5,0.3);rim=max(rim,0.015);}
   }
   vec2 uv=(floor(pixel+shift)+0.5)/uGlassResolution;
   if(texture2D(uGlassMask,uv).r>0.5 && (1.0-uv.y)*uGlassResolution.y>uShutterEdge) base=texture2D(uFrame,uv);

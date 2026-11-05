@@ -12,7 +12,7 @@ export class WindowDrops {
     while (this.accumulator >= 1 / 60) { this.accumulator -= 1 / 60; this.step(rain); }
   }
   private step(rain: number) {
-    if (this.drops.length < 32 && this.random() < rain * 0.12) {
+    if (this.drops.length < 64 && this.random() < rain * 0.4) {
       this.drops.push({ x: this.random() * this.width, y: this.random() * this.height, mass: 3 + this.random() * 9, speed: 0, phase: this.random() * 30 });
     }
     for (const d of this.drops) {

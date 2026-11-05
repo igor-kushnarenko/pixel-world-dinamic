@@ -100,7 +100,7 @@ export class AtmosphereEngine {
     this.canvas.style.display = 'block'; this.canvas.style.flexShrink = '0';
     this.windowTexture = this.whiteTexture();
     this.camera.position.z = 1;
-    this.outputMaterial = new ShaderMaterial({ vertexShader: vertex, fragmentShader: outputFragment, uniforms: { uFrame: { value: this.target.texture }, uGlassMask: { value: this.windowTexture }, uGlassResolution: { value: new Vector2(this.width,this.height) }, uDrops: { value: Array.from({length:32},()=>new Vector4()) }, uDropCount: { value: 0 },uShutterEdge:{value:-1} }, depthTest: false, depthWrite: false });
+    this.outputMaterial = new ShaderMaterial({ vertexShader: vertex, fragmentShader: outputFragment, uniforms: { uFrame: { value: this.target.texture }, uGlassMask: { value: this.windowTexture }, uGlassResolution: { value: new Vector2(this.width,this.height) }, uDrops: { value: Array.from({length:64},()=>new Vector4()) }, uDropCount: { value: 0 },uShutterEdge:{value:-1} }, depthTest: false, depthWrite: false });
     this.output.add(new Mesh(this.geometry, this.outputMaterial));
     options.container.append(this.canvas);
     this.observer = new ResizeObserver(() => this.resize());

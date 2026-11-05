@@ -157,10 +157,18 @@ function changeMood(mood: SkyMood) {
   if (mood === 'storm') { settings.clouds = true; settings.coverage = Math.max(0.85, settings.coverage); settings.rain = Math.max(0.5, settings.rain); }
   applyEnvironment(); audio.click(); notify(moodNames[mood]);
 }
+let weatherBlend: {from: ReturnType<typeof engine.getParameters>;to: ReturnType<typeof engine.getParameters>;start:number}|undefined;
+function blendWeather(a:any,b:any,t:number,key=''):any {
+ if(typeof b==='number')return key==='seed'?a:a+(b-a)*t;
+ if(typeof b==='boolean')return t===1?b:(key==='enabled'?a||b:b);
+ if(b&&typeof b==='object')return Object.fromEntries(Object.keys(b).map(k=>[k,blendWeather(a?.[k]??b[k],b[k],t,k)]));
+ return b;
+}
 function randomizeWeather(){
+  const from=engine.getParameters();
   const seed=crypto.getRandomValues(new Uint32Array(1))[0];const next=randomWeatherPreset(seed,Object.keys(settings.atmosphere)),p=next.parameters;
   settings.timeOfDay=targetTime=p.timeOfDay;settings.sky=p.weather.stormEnabled?'storm':p.timeOfDay>=8&&p.timeOfDay<17?'day':p.timeOfDay>=20||p.timeOfDay<5?'night':'dusk';settings.condition=next.kind;
-  settings.clouds=p.clouds.enabled;settings.coverage=p.clouds.coverage;settings.cloudDensity=p.clouds.density;settings.cloudScale=p.clouds.scale;settings.cloudSpeed=p.clouds.windSpeed;settings.windDirection=p.clouds.windDirectionDeg;settings.cloudLayers=p.clouds.layers;settings.rain=p.weather.rain;settings.stormEnabled=p.weather.stormEnabled;settings.overcast=p.sky.overcast;settings.atmosphere=p.weather.layers;settings.atmosphereSeed=p.seed;applyEnvironment();audio.click();notify(next.name+' · новая погода');
+  settings.clouds=p.clouds.enabled;settings.coverage=p.clouds.coverage;settings.cloudDensity=p.clouds.density;settings.cloudScale=p.clouds.scale;settings.cloudSpeed=p.clouds.windSpeed;settings.windDirection=p.clouds.windDirectionDeg;settings.cloudLayers=p.clouds.layers;settings.rain=p.weather.rain;settings.stormEnabled=p.weather.stormEnabled;settings.overcast=p.sky.overcast;settings.atmosphere=p.weather.layers;settings.atmosphereSeed=p.seed;applyEnvironment();const to=engine.getParameters();to.timeOfDay=p.timeOfDay;to.seed=from.seed;settings.atmosphereSeed=from.seed;saveSettings(settings);if(!from.clouds.enabled)from.clouds.density=0;if(!to.clouds.enabled)to.clouds.density=0;engine.setParameters(from);weatherBlend={from,to,start:performance.now()};audio.click();notify(next.name+' · переход 5 секунд');
 }
 function setLamp(which: 'left' | 'right') { settings[which] = !settings[which]; applyEnvironment(); audio.click(); notify(`${which === 'left' ? 'Лампа' : 'Панель'} ${settings[which] ? 'включена' : 'выключена'}`); }
 async function toggleRadio() {
@@ -304,6 +312,7 @@ async function main() {
   function frame(now: number) {
     if (disposed) return;
     const dt = frameDeltaSeconds(now, previous); previous = now;
+    if(!document.hidden&&weatherBlend){const transition=weatherBlend,t=Math.min(1,(now-transition.start)/5000),smooth=t*t*(3-2*t);const blended=blendWeather(transition.from,transition.to,smooth);engine.setParameters(blended);shownTime=blended.timeOfDay;if(t===1)weatherBlend=undefined;}
     if(!document.hidden){
       computerObject.update(settings.computer,ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient,settings.overcast).room[0],shutter,roomRight,roomLeft);
       radioObject.update(radioOn,ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient,settings.overcast).room[0],shutter,roomRight,roomLeft);
@@ -315,7 +324,7 @@ async function main() {
         flight.update(dt);
         for (const [id, placement] of Object.entries(flight.placements)) engine.setLayerPlacement(id, placement);
       }
-      shownTime += (targetTime - shownTime) * (1 - Math.exp(-dt / 1.8));
+      if(!weatherBlend)shownTime += (targetTime - shownTime) * (1 - Math.exp(-dt / 1.8));
       if (Math.abs(shownTime - lastAppliedTime) > 0.005) { lastAppliedTime = shownTime; engine.setParameters({ timeOfDay: shownTime }); }
       const a = 1 - Math.exp(-dt / 0.18);
       roomLeft += ((settings.left ? 1 : 0) - roomLeft) * a;
@@ -330,7 +339,7 @@ async function main() {
       const lights = settings.lights * (1 - daylight * 0.65);
       if (Math.abs(lights - lastLightLevel) > 0.002) { lastLightLevel = lights; engine.setParameters({ lighting: { cityLightsIntensity: lights } }); }
       engine.update(dt);
-    } else if (query.has('paused')) {if(shownTime!==targetTime){shownTime=targetTime;engine.setParameters({timeOfDay:shownTime})}roomComputer=settings.computer?1:0;roomLeft=settings.left?1:0;roomRight=settings.right?1:0;roomRadio=radioOn?1:0;engine.setComputerLevel('apartment',roomComputer); engine.setRoomLightLevels('apartment',roomLeft,roomRight,roomRadio);engine.setWindowShutter(shutter,[roomLeft,roomRight,roomRadio,roomComputer]);const lighting=ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient,settings.overcast);engine.setLayerTint('apartment',lighting.room.map(c=>c*exteriorVisibility(shutter))as[number,number,number]); engine.render(); }
+    } else if (query.has('paused')) {if(!weatherBlend&&shownTime!==targetTime){shownTime=targetTime;engine.setParameters({timeOfDay:shownTime})}roomComputer=settings.computer?1:0;roomLeft=settings.left?1:0;roomRight=settings.right?1:0;roomRadio=radioOn?1:0;engine.setComputerLevel('apartment',roomComputer); engine.setRoomLightLevels('apartment',roomLeft,roomRight,roomRadio);engine.setWindowShutter(shutter,[roomLeft,roomRight,roomRadio,roomComputer]);const lighting=ambientLighting(shownTime,settings.sky,settings.city,flight.roomAmbient,settings.overcast);engine.setLayerTint('apartment',lighting.room.map(c=>c*exteriorVisibility(shutter))as[number,number,number]); engine.render(); }
     frameId = requestAnimationFrame(frame);
   }
   frameId = requestAnimationFrame(frame);
