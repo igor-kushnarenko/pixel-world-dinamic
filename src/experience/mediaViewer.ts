@@ -7,57 +7,66 @@ export function mediaIndex(index:number,delta:number,length:number){return lengt
 let active=false;
 export const isMediaOpen=()=>active;
 const formatTime=(n:number)=>Number.isFinite(n)?`${Math.floor(n/60)}:${String(Math.floor(n%60)).padStart(2,'0')}`:'0:00';
-export function createMediaViewer(){
- const dialog=document.createElement('dialog');dialog.className='media-viewer';dialog.setAttribute('aria-label','Просмотр медиа');
- dialog.innerHTML='<header class="media-header"><div><h2 id="media-title"></h2><small id="media-count"></small></div><button type="button" id="media-full">На весь экран</button><button type="button" id="media-close" aria-label="Закрыть просмотр">Закрыть · Esc</button></header><div class="media-content"></div><p class="media-status" role="status"></p><nav class="media-photo-controls" aria-label="Фотографии"><button type="button" id="media-prev">← Назад</button><span>← → перелистывание</span><button type="button" id="media-next">Вперёд →</button></nav>';
- const el=<T extends HTMLElement>(s:string)=>dialog.querySelector<T>(s)!;
- const content=el<HTMLDivElement>('.media-content'),status=el<HTMLParagraphElement>('.media-status');
- let kind:MediaKind='image',playlist:FileEntry[]=[],index=0,revision=0,media:HTMLMediaElement|undefined,prior:HTMLElement|null=null,ownedFullscreen=false;
+export function containRect(w:number,h:number,areaW:number,areaH:number){const scale=Math.min(areaW/w,areaH/h);return {x:(areaW-w*scale)/2,y:(areaH-h*scale)/2,width:w*scale,height:h*scale}}
+/** All pixels and controls stay inside the physical CRT aperture. No page overlays. */
+export function createMediaViewer(host:HTMLElement,onClose:()=>void=()=>{}){
+ const controls=document.createElement('div');controls.className='computer-media-controls';controls.hidden=true;controls.setAttribute('aria-label','Медиаплеер на дисплее компьютера');
+ controls.innerHTML='<div class="crt-photo-controls"><button type="button" data-previous aria-label="Предыдущая фотография">←</button><button type="button" data-next aria-label="Следующая фотография">→</button></div><button type="button" class="crt-media-close" data-close aria-label="Закрыть медиа">×</button><div class="crt-player-controls"><div class="crt-player-buttons"><button type="button" data-previous-track aria-label="Предыдущий трек">⏮</button><button type="button" data-play aria-label="Воспроизведение или пауза">▶</button><button type="button" data-stop aria-label="Остановить">■</button><button type="button" data-next-track aria-label="Следующий трек">⏭</button></div><label class="crt-seek"><span>Позиция</span><input data-seek type="range" min="0" max="100" step=".1" value="0" aria-label="Позиция воспроизведения" disabled></label><label class="crt-volume"><span>VOL</span><input data-volume type="range" min="0" max="100" value="65" aria-label="Громкость плеера"><output data-volume-label>65%</output></label></div><div class="crt-media-source" hidden></div>';
+ host.append(controls);
+ const el=<T extends HTMLElement>(s:string)=>controls.querySelector<T>(s)!;
+ let kind:MediaKind='image',playlist:FileEntry[]=[],index=0,revision=0,media:HTMLMediaElement|undefined,image:HTMLImageElement|undefined,status='',title='';
  let volume=.65;try{const v=localStorage.getItem('pixel-world.media-volume');if(v!==null&&Number.isFinite(Number(v)))volume=Math.max(0,Math.min(1,Number(v)))}catch{}
- function disposeMedia(){if(media){media.pause();media.removeAttribute('src');media.load();media=undefined}content.replaceChildren()}
- function close(){if(!active)return;active=false;revision++;disposeMedia();dialog.close();dialog.remove();if(ownedFullscreen&&document.fullscreenElement===dialog)void document.exitFullscreen().catch(()=>{});ownedFullscreen=false;prior?.focus({preventScroll:true})}
- function move(delta:number){index=mediaIndex(index,delta,playlist.length);render()}
- function render(){
-  const entry=playlist[index];if(!entry)return;const mine=++revision;disposeMedia();status.textContent='';el('#media-title').textContent=entry.name;el('#media-count').textContent=`${index+1} / ${playlist.length}`;
-  const url=new URL(import.meta.env.BASE_URL+entry.url,location.href).href;
+ function disposeMedia(){if(media){media.pause();media.removeAttribute('src');media.load();media=undefined}image=undefined;el('.crt-media-source').replaceChildren()}
+ function close(){if(!active)return;active=false;revision++;disposeMedia();controls.hidden=true;controls.dataset.kind='';host.dataset.mediaKind='';host.dataset.mediaTitle='';onClose()}
+ function move(delta:number){index=mediaIndex(index,delta,playlist.length);load()}
+ async function playMedia(){if(!media)return;const element=media,mine=revision;try{await element.play();if(mine===revision)status=''}catch{if(mine===revision&&!element.error)status='Нажмите ▶ для воспроизведения'}}
+ function updateControls(){
+  const seek=el<HTMLInputElement>('[data-seek]'),valid=!!media&&Number.isFinite(media.duration)&&media.duration>0;
+  seek.disabled=!valid;if(valid)seek.value=String(media!.currentTime/media!.duration*100);
+  el('[data-play]').textContent=media?.paused?'▶':'❚❚';
+  const v=el<HTMLInputElement>('[data-volume]');v.value=String(Math.round(volume*100));el('[data-volume-label]').textContent=v.value+'%';
+ }
+ function load(){
+  const file=playlist[index];if(!file)return;const mine=++revision;disposeMedia();title=file.name;status='Загрузка…';host.dataset.mediaTitle=title;
+  const url=new URL(import.meta.env.BASE_URL+file.url,location.href).href;
   if(kind==='image'){
-   const image=new Image();image.className='media-photo';image.alt=entry.name;image.onload=()=>{if(revision===mine)status.textContent=''};image.onerror=()=>{if(revision===mine)status.textContent='Не удалось открыть изображение. Попробуйте другой файл.'};image.src=url;content.append(image);return;
+   image=new Image();image.alt=title;image.className='crt-media-image';image.onload=()=>{if(revision===mine)status=''};image.onerror=()=>{if(revision===mine)status='Не удалось открыть изображение'};image.src=url;el('.crt-media-source').append(image);return;
   }
   const element=document.createElement(kind==='audio'?'audio':'video');media=element;element.preload='metadata';element.volume=volume;element.src=url;
-  element.onvolumechange=()=>{volume=element.volume;try{localStorage.setItem('pixel-world.media-volume',String(volume))}catch{}};
-  element.onerror=()=>{if(revision===mine)status.textContent='Не удалось воспроизвести файл. Формат или кодек может не поддерживаться браузером.'};
-  content.append(element);
-  if(kind==='video'){(element as HTMLVideoElement).playsInline=true;element.controls=true;element.className='media-video'}
-  else{
-   const controls=document.createElement('div');controls.className='music-controls';controls.innerHTML='<p class="music-symbol" aria-hidden="true">♫</p><div class="music-buttons"><button type="button" data-previous aria-label="Предыдущая композиция">⏮</button><button type="button" data-play>Воспроизвести</button><button type="button" data-stop>Стоп</button><button type="button" data-next aria-label="Следующая композиция">⏭</button></div><label>Позиция <input data-seek type="range" min="0" max="100" step="0.1" value="0" disabled></label><output data-time>0:00 / 0:00</output><label>Громкость <input data-volume type="range" min="0" max="100" value="65"><output data-volume-label>65%</output></label>';
-   content.append(controls);const q=<T extends HTMLElement>(s:string)=>controls.querySelector<T>(s)!;
-   const play=q<HTMLButtonElement>('[data-play]'),seek=q<HTMLInputElement>('[data-seek]'),v=q<HTMLInputElement>('[data-volume]');
-   const update=()=>{play.textContent=element.paused?'Воспроизвести':'Пауза';const valid=Number.isFinite(element.duration)&&element.duration>0;seek.disabled=!valid;if(valid)seek.value=String(element.currentTime/element.duration*100);q('[data-time]').textContent=`${formatTime(element.currentTime)} / ${formatTime(element.duration)}`};
-   element.onplay=element.onpause=element.ontimeupdate=element.onloadedmetadata=element.ondurationchange=update;
-   play.onclick=()=>{if(element.paused)void playMedia(element,mine);else element.pause()};q('[data-stop]').onclick=()=>{element.pause();try{element.currentTime=0}catch{}update()};
-   q('[data-previous]').onclick=()=>move(-1);q('[data-next]').onclick=()=>move(1);
-   seek.oninput=()=>{if(Number.isFinite(element.duration))element.currentTime=Number(seek.value)/100*element.duration};
-   v.value=String(Math.round(volume*100));q('[data-volume-label]').textContent=v.value+'%';v.oninput=()=>{element.volume=Number(v.value)/100;q('[data-volume-label]').textContent=v.value+'%'};
-   element.onended=()=>{if(index+1<playlist.length)move(1);else update()};update();
-  }
-  void playMedia(element,mine);
+  if(kind==='video'){(element as HTMLVideoElement).playsInline=true;element.className='crt-media-video'}else element.className='crt-media-audio';
+  element.onloadedmetadata=()=>{if(revision===mine){status='';updateControls()}};
+  element.onplay=element.onpause=element.ontimeupdate=element.ondurationchange=updateControls;
+  element.onvolumechange=()=>{volume=element.volume;try{localStorage.setItem('pixel-world.media-volume',String(volume))}catch{}updateControls()};
+  element.onerror=()=>{if(revision===mine)status='Формат или кодек недоступен'};
+  element.onended=()=>{if(kind==='audio'&&index+1<playlist.length)move(1);else updateControls()};
+  el('.crt-media-source').append(element);updateControls();void playMedia();
  }
- async function playMedia(element:HTMLMediaElement,mine:number){try{await element.play();if(revision===mine)status.textContent=''}catch{if(revision===mine&&!element.error)status.textContent='Нажмите кнопку воспроизведения, чтобы запустить файл.'}}
- el('#media-close').onclick=close;el('#media-prev').onclick=()=>move(-1);el('#media-next').onclick=()=>move(1);
- el('#media-full').onclick=()=>{if(document.fullscreenElement===dialog)void document.exitFullscreen();else if(dialog.requestFullscreen)void dialog.requestFullscreen().then(()=>{ownedFullscreen=true}).catch(()=>{status.textContent='Полноэкранный режим недоступен; просмотр открыт на всю страницу.'})};
- dialog.addEventListener('cancel',e=>{e.preventDefault();close()});
- const onFullscreen=()=>{if(ownedFullscreen&&document.fullscreenElement!==dialog){ownedFullscreen=false;close()}};
- document.addEventListener('fullscreenchange',onFullscreen);
- const onKey=(e:KeyboardEvent)=>{
-  if(!active||e.isComposing||e.ctrlKey||e.altKey||e.metaKey)return;
+ const toggle=()=>{if(media?.paused)void playMedia();else media?.pause()};
+ const stop=()=>{if(media){media.pause();try{media.currentTime=0}catch{}updateControls()}};
+ el('[data-close]').onclick=close;el('[data-previous]').onclick=()=>move(-1);el('[data-next]').onclick=()=>move(1);
+ el('[data-previous-track]').onclick=()=>move(-1);el('[data-next-track]').onclick=()=>move(1);el('[data-play]').onclick=toggle;el('[data-stop]').onclick=stop;
+ el<HTMLInputElement>('[data-seek]').oninput=e=>{if(media&&Number.isFinite(media.duration))media.currentTime=Number((e.target as HTMLInputElement).value)/100*media.duration};
+ el<HTMLInputElement>('[data-volume]').oninput=e=>{if(media)media.volume=Number((e.target as HTMLInputElement).value)/100};
+ function handleKey(key:string){if(!active)return false;if(key==='Escape'){close();return true}if(kind==='image'&&key.startsWith('Arrow')){move(key==='ArrowLeft'||key==='ArrowUp'?-1:1);return true}if(key==='Enter'||key===' '){toggle();return true}return key.startsWith('Arrow')}
+ const onKey=(e:KeyboardEvent)=>{if(!active||e.isComposing||e.ctrlKey||e.altKey||e.metaKey)return;
   if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();return}
-  const interactive=e.target instanceof Element&&!!e.target.closest('button,input,select,textarea');
-  if(kind==='image'&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();move(e.key==='ArrowLeft'||e.key==='ArrowUp'?-1:1)}
-  else if(kind==='audio'&&e.code==='Space'&&!interactive){e.preventDefault();e.stopImmediatePropagation();if(media?.paused)void playMedia(media,revision);else media?.pause()}
+  if(e.target instanceof Element&&e.target.closest('.computer-media-controls button,.computer-media-controls input')&&!(kind==='image'&&e.key.startsWith('Arrow')))return;
+  if(handleKey(e.key)){e.preventDefault();e.stopImmediatePropagation()}
  };
  window.addEventListener('keydown',onKey,true);
- return {open(file:FileEntry,siblings:FileEntry[]){const detected=mediaKind(file.name);if(!detected||!file.url)return false;
-  if(active)close();prior=document.activeElement instanceof HTMLElement?document.activeElement:null;kind=detected;playlist=mediaPlaylist(file,siblings);index=playlist.findIndex(f=>f.path===file.path);if(index<0){playlist=[file];index=0}
-  (document.fullscreenElement??document.body).append(dialog);dialog.classList.toggle('is-audio',kind==='audio');el<HTMLElement>('.media-photo-controls').hidden=kind!=='image';el('#media-full').hidden=kind==='audio';active=true;dialog.showModal();render();el<HTMLButtonElement>('#media-close').focus();return true;
- },close,dispose(){close();window.removeEventListener('keydown',onKey,true);document.removeEventListener('fullscreenchange',onFullscreen)}};
+ return {get active(){return active},handleKey,open(file:FileEntry,siblings:FileEntry[]){const detected=mediaKind(file.name);if(!detected||!file.url)return false;if(active)close();kind=detected;playlist=mediaPlaylist(file,siblings);index=playlist.findIndex(f=>f.path===file.path);if(index<0){playlist=[file];index=0}active=true;controls.hidden=false;controls.dataset.kind=kind;host.dataset.mediaKind=kind;el<HTMLElement>('.crt-photo-controls').hidden=kind!=='image';el<HTMLElement>('.crt-player-controls').hidden=kind==='image';load();return true},
+ draw(ctx:CanvasRenderingContext2D){
+  if(!active)return;ctx.textBaseline='alphabetic';ctx.fillStyle=kind==='audio'?'#071c30':'#000';ctx.fillRect(0,0,360,192);
+  const source=kind==='image'?image:kind==='video'?media as HTMLVideoElement:undefined;
+  const w=source instanceof HTMLImageElement?source.naturalWidth:source instanceof HTMLVideoElement&&source.readyState>=2?source.videoWidth:0;
+  const h=source instanceof HTMLImageElement?source.naturalHeight:source instanceof HTMLVideoElement?source.videoHeight:0;
+  if(source&&w&&h){const r=containRect(w,h,360,192);ctx.imageSmoothingEnabled=true;ctx.drawImage(source,r.x,r.y,r.width,r.height);ctx.imageSmoothingEnabled=false}
+  const fit=(text:string,max:number)=>{let s=text;while(s.length&&ctx.measureText(s).width>max)s=s.slice(0,-1);return s===text?s:s.slice(0,-1)+'…'};
+  if(kind==='audio'){
+   ctx.fillStyle='#143c55';ctx.fillRect(0,0,360,25);ctx.fillStyle='#a6e6db';ctx.font='bold 17px monospace';ctx.fillText('MUSIC PLAYER',15,18);
+   ctx.font='bold 15px monospace';ctx.fillStyle='#e0eee9';ctx.fillText(fit(title,330),15,48);
+   ctx.font='14px monospace';ctx.fillStyle='#88b4c1';ctx.fillText(`${formatTime(media?.currentTime??0)} / ${formatTime(media?.duration??0)}   ${index+1}/${playlist.length}`,15,71);
+  }
+  if(status){ctx.fillStyle='#06121ded';ctx.fillRect(8,kind==='audio'?74:146,344,25);ctx.fillStyle='#e5c690';ctx.font='14px monospace';ctx.fillText(fit(status,330),14,kind==='audio'?91:163)}
+ },close,dispose(){close();controls.remove();window.removeEventListener('keydown',onKey,true)}};
 }
