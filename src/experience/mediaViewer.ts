@@ -48,12 +48,6 @@ export function createMediaViewer(host:HTMLElement,onClose:()=>void=()=>{}){
  el<HTMLInputElement>('[data-seek]').oninput=e=>{if(media&&Number.isFinite(media.duration))media.currentTime=Number((e.target as HTMLInputElement).value)/100*media.duration};
  el<HTMLInputElement>('[data-volume]').oninput=e=>{if(media)media.volume=Number((e.target as HTMLInputElement).value)/100};
  function handleKey(key:string){if(!active)return false;if(key==='Escape'){close();return true}if(kind==='image'&&key.startsWith('Arrow')){move(key==='ArrowLeft'||key==='ArrowUp'?-1:1);return true}if(key==='Enter'||key===' '){toggle();return true}return key.startsWith('Arrow')}
- const onKey=(e:KeyboardEvent)=>{if(!active||e.isComposing||e.ctrlKey||e.altKey||e.metaKey)return;
-  if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();return}
-  if(e.target instanceof Element&&e.target.closest('.computer-media-controls button,.computer-media-controls input')&&!(kind==='image'&&e.key.startsWith('Arrow')))return;
-  if(handleKey(e.key)){e.preventDefault();e.stopImmediatePropagation()}
- };
- window.addEventListener('keydown',onKey,true);
  return {get active(){return active},handleKey,open(file:FileEntry,siblings:FileEntry[]){const detected=mediaKind(file.name);if(!detected||!file.url)return false;if(active)close();kind=detected;playlist=mediaPlaylist(file,siblings);index=playlist.findIndex(f=>f.path===file.path);if(index<0){playlist=[file];index=0}active=true;controls.hidden=false;controls.dataset.kind=kind;host.dataset.mediaKind=kind;el<HTMLElement>('.crt-photo-controls').hidden=kind!=='image';el<HTMLElement>('.crt-player-controls').hidden=kind==='image';load();return true},
  draw(ctx:CanvasRenderingContext2D){
   if(!active)return;ctx.textBaseline='alphabetic';ctx.fillStyle=kind==='audio'?'#071c30':'#000';ctx.fillRect(0,0,360,192);
@@ -68,5 +62,5 @@ export function createMediaViewer(host:HTMLElement,onClose:()=>void=()=>{}){
    ctx.font='14px monospace';ctx.fillStyle='#88b4c1';ctx.fillText(`${formatTime(media?.currentTime??0)} / ${formatTime(media?.duration??0)}   ${index+1}/${playlist.length}`,15,71);
   }
   if(status){ctx.fillStyle='#06121ded';ctx.fillRect(8,kind==='audio'?74:146,344,25);ctx.fillStyle='#e5c690';ctx.font='14px monospace';ctx.fillText(fit(status,330),14,kind==='audio'?91:163)}
- },close,dispose(){close();controls.remove();window.removeEventListener('keydown',onKey,true)}};
+ },close,dispose(){close();controls.remove()}};
 }

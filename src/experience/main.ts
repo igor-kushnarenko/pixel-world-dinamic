@@ -1,5 +1,4 @@
 import { randomWeatherPreset, WEATHER_NAMES, DEFAULT_PARAMETERS } from '../engine';
-import { isMediaOpen } from './mediaViewer';
 import { mountComputer } from './computerObject';
 import { mountRadio } from './roomObjects';
 import './style.css';
@@ -285,11 +284,9 @@ async function main() {
   };
   window.addEventListener('pointermove', wake, { passive: true }); window.addEventListener('pointerdown', wake, { passive: true });
   window.addEventListener('keydown', e => {
-    if (isMediaOpen() || !entered || e.defaultPrevented || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key === 'Escape') { computerObject.handleKey('Escape');menu(false);e.preventDefault();return; }
+    if (!entered || e.defaultPrevented || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'Escape') { menu(false); e.preventDefault(); return; }
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || e.target instanceof HTMLTextAreaElement || (e.target instanceof HTMLElement && e.target.isContentEditable)) return;
-    if(e.key==='Enter'&&settings.computer&&!document.body.classList.contains('menu-open')){e.preventDefault();if(!e.repeat)computerObject.handleKey('Enter');wake();return;}
-    if(settings.computer&&!document.body.classList.contains('menu-open')&&e.key.startsWith('Arrow')&&computerObject.handleKey(e.key)){e.preventDefault();wake();return;}
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
       if (!e.repeat) changeView(e.key === 'ArrowLeft' ? -1 : 1);

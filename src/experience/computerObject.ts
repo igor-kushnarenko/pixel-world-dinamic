@@ -9,7 +9,7 @@ export async function mountComputer(host:HTMLElement,toggle:()=>void,screen:HTML
  const h=Math.round(W*image.height/image.width), key='pixel-world-dinamic.computer-position.v1';
  let position:Body={x:500,y:835,vy:0,width:W,height:h};
  try{const stored=localStorage.getItem(key),v=JSON.parse(stored||'null');if(v&&Number.isFinite(v.x)&&Number.isFinite(v.y))position=restingPosition({...position,...dragPosition(v.x,v.y,W,h)})}catch{}
- const button=document.createElement('div');button.tabIndex=0;button.setAttribute('role','group');button.className='movable-radio movable-computer';button.setAttribute('aria-label','Компьютер: кнопка питания — включить, корпус — перетащить');button.title='Нажмите для включения · перетащите и отпустите — компьютер опустится на подоконник';
+ const button=document.createElement('div');button.setAttribute('role','group');button.className='movable-radio movable-computer';button.setAttribute('aria-label','Компьютер: кнопка питания — включить, корпус — перетащить');button.title='Нажмите для включения · перетащите и отпустите — компьютер опустится на подоконник';
  button.append(image);
  const material=createObjectMaterial(image,W,h);button.append(material.canvas);
  const keyboard=new Image();keyboard.src=image.src;keyboard.className='computer-keyboard';button.append(keyboard);
@@ -34,7 +34,6 @@ export async function mountComputer(host:HTMLElement,toggle:()=>void,screen:HTML
  button.onpointermove=e=>{if(!start||e.pointerId!==start.id)return;const r=host.getBoundingClientRect(),dx=(e.clientX-start.x)*WIDTH/r.width,dy=(e.clientY-start.y)*HEIGHT/r.height;if(Math.hypot(dx,dy)>5)moved=true;if(moved){position={...position,...dragPosition(start.px+dx,start.py+dy,W,h),vy:0};place()}};
  const end=(e:PointerEvent,cancel=false)=>{if(!start||e.pointerId!==start.id)return;const click=!moved&&!cancel;start=undefined;button.classList.remove('dragging');if(click){if(action==='power')toggle();else handleKey(action)}};
  button.onpointerup=e=>end(e);button.onpointercancel=e=>end(e,true);button.onlostpointercapture=e=>end(e as PointerEvent,true);
- button.onclick=e=>{if(e.target instanceof Element&&e.target.closest('.computer-media-controls'))return;if(e.detail===0)toggle()};
  let saved='',previous=performance.now();
  return {handleKey,update(on:boolean,ambient:number,closed:number,panel:number,lamp:number=0){const now=performance.now();if(!start){position=fallStep(position,(now-previous)/1000);place();if(position.vy===0){const data=JSON.stringify({x:Math.round(position.x),y:Math.round(position.y)});if(data!==saved){try{localStorage.setItem(key,data)}catch{}saved=data}}}previous=now;button.setAttribute('aria-pressed',String(on));material.update(position.x,position.y,{ambient,closed,panel,lamp});display.style.opacity=on?'1':'0';keyboard.style.opacity=on?'0.5':'0';power.classList.toggle('on',on);if(!on){viewer.close();view='weather';dirty=true}button.dataset.screenMode=view;button.dataset.filesReady=String(browser.ready);button.dataset.filePath=browser.path;button.dataset.fileSelection=browser.selected?.name??'';if(on&&(viewer.active||!wasOn||dirty||now-lastDraw>1000)){ctx.clearRect(0,0,360,192);if(viewer.active)viewer.draw(ctx);else if(view==='files')drawCommander(ctx,browser);else ctx.drawImage(screen,0,0,360,192);lastDraw=now;dirty=false}wasOn=on;objectPlane.style.zIndex=String(Math.round(position.y))}};
 }
