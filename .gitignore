@@ -17,3 +17,6 @@ artifacts/*
 .env
 .env.*
 !.env.example
+
+!kits/apartment.zip
+!public/downloads/*-0.5.0.zip

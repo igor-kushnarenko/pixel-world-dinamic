@@ -1,3 +1,7 @@
+# Atmosphere Engine 0.5.0
+
+[Полная инструкция и список возможностей](docs/REUSE_050.md). Новая переносимая оболочка PanoramaExperience, погода, звук, интерфейс и тени 0.4.0. Для новых локаций используйте минимальный starter; для комнат — полный starter квартиры.
+
 # pixel-world-dinamic · ПИКСЕЛЬНЫЙ МИР
 
 Самостоятельная копия pixel-world для дальнейшей разработки интерактивной комнаты. Исходный коммит: b83dd778a9730eabf8a9a69140ca03f618fcaae2. [Описание отделения](docs/FORK.md).
@@ -116,3 +120,6 @@ live_sky_instructions.md  каноническая спецификация v1.0
 
 
 Отдельный пакет: [Atmosphere Engine 0.3.0](https://igor-kushnarenko.github.io/pixel-world-dinamic/downloads/pixel-world-atmosphere-engine-0.3.0.tgz).
+
+
+Версия 0.5.0: [пакет](https://igor-kushnarenko.github.io/pixel-world-dinamic/downloads/pixel-world-atmosphere-engine-0.5.0.tgz), [минимальный старт](https://igor-kushnarenko.github.io/pixel-world-dinamic/downloads/pixel-world-panorama-starter-0.5.0.zip), [полный пример квартиры](https://igor-kushnarenko.github.io/pixel-world-dinamic/downloads/pixel-world-apartment-starter-0.5.0.zip).

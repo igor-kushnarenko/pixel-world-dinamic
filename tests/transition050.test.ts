@@ -1,0 +1,4 @@
+import {it,expect} from 'vitest';
+import {WeatherTransition,DEFAULT_PARAMETERS,resolveShadowLighting,projectShadowSample} from '../src/engine';
+it('interpolates weather in five seconds without reseeding',()=>{const transition=new WeatherTransition(DEFAULT_PARAMETERS,{seed:999,timeOfDay:12,weather:{rain:1}});const half=transition.update(2.5);expect(half.weather.rain).toBeCloseTo(.5);expect(half.seed).toBe(DEFAULT_PARAMETERS.seed);expect(transition.done).toBe(false);expect(transition.update(2.5).weather.rain).toBe(1);expect(transition.done).toBe(true)});
+it('retains shadows from the provided 0.4.0 package',()=>{const light={id:'sun',type:'directional' as const,azimuthDeg:0,elevationDeg:45,intensity:1,color:[1,1,1] as const};expect(resolveShadowLighting({enabled:true,ambient:.2,lights:[light]}).lights).toHaveLength(1);expect(projectShadowSample(10,20,0,10,light)![0]).toBeCloseTo(20);expect(()=>resolveShadowLighting({enabled:true,ambient:-1,lights:[]})).toThrow()});

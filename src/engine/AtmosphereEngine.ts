@@ -6,6 +6,8 @@ import {
   UnsignedByteType, Vector2, Vector3, Vector4, WebGLRenderer, WebGLRenderTarget, CanvasTexture
 } from 'three';
 import type { IUniform } from 'three';
+import { resolveShadowLighting, withShadowLighting, MAX_SHADOW_CASTERS } from './shadows';
+import type { ShadowLightingState } from './shadows';
 import type { AtmosphereParameters, CloudPlane, EngineDiagnostics, EngineOptions, LightMask, LayerPlacement, ParameterPatch, TextureSource } from './types';
 import { getPreset, paletteAt, parsePreset, resolveParameters, rgb } from './parameters';
 import { frameDeltaSeconds } from './clock';
@@ -37,6 +39,9 @@ export class AtmosphereEngine {
   private readonly trafficLayers = new Map<string, Pass>();
   private readonly drops: WindowDrops;
   private readonly imageLayers = new Map<string, { pass: Pass; native: Vector2 }>();
+  private shadowLighting: ShadowLightingState;
+  private readonly shadowCasters: { id: string; pass: Pass; texture: Texture; elevation: number; opacity: number; red: boolean; scope: string }[] = [];
+  private readonly shadowReceivers: { pass: Pass; id: string; scope: string }[] = [];
   private readonly observer: ResizeObserver;
   private parameters: AtmosphereParameters;
   private windowTexture: Texture;
@@ -55,7 +60,7 @@ export class AtmosphereEngine {
 
   static async create(options: EngineOptions): Promise<AtmosphereEngine> {
     const { width, height, layers = [], lights = [] } = options.scene;
-    if (![width, height].every(n => Number.isInteger(n) && n >= 1 && n <= 4096)) throw new Error('Scene dimensions must be integer logical pixels, 1…4096');
+    if (![width, height].every(n => Number.isInteger(n) && n >= 1 && n <= 4096)) throw new Error('Scene dimensions must be integer logical pixels, 1вЂ¦4096');
     const ids = ['sky', 'cloud-far', 'cloud-low', 'fog', 'rain', ...layers.map(l => l.id), ...lights.map(l => l.id)];
     if(options.scene.shutter){ids.push('shutter');if(!options.scene.windowMask)throw new Error('Shutter requires window mask');resolveShutter(options.scene.shutter,width,height);}
     ids.push(...layers.filter(l => l.scope === 'world').map(l => `atmosphere-${l.id}`));
@@ -71,6 +76,12 @@ export class AtmosphereEngine {
       if (depth !== undefined && (!Number.isFinite(depth) || depth <= 0 || depth >= 1000)) throw new Error(`Invalid ${key}: expected 0 < depth < 1000`);
     }
     resolveParameters(options.parameters);
+    if (options.scene.shadowLighting) resolveShadowLighting(options.scene.shadowLighting);
+    if (layers.filter(l => l.shadows?.casts).length > MAX_SHADOW_CASTERS) throw new Error('At most four shadow casters are supported');
+    for (const l of layers) if (l.shadows) {
+      const s = l.shadows;
+      if (!Number.isFinite(s.elevation) || s.elevation < 0 || (s.opacity !== undefined && (!Number.isFinite(s.opacity) || s.opacity < 0 || s.opacity > 1)) || (s.casts !== undefined && typeof s.casts !== 'boolean') || (s.receives !== undefined && typeof s.receives !== 'boolean')) throw new Error(`Invalid shadow geometry: ${l.id}`);
+    }
     const engine = new AtmosphereEngine(options);
     try { await engine.initialize(); engine.render(); return engine; }
     catch (error) { engine.dispose(); throw error; }
@@ -80,6 +91,7 @@ export class AtmosphereEngine {
     this.options = options;
     this.width = options.scene.width; this.height = options.scene.height;
     this.parameters = resolveParameters(options.parameters);
+    this.shadowLighting = resolveShadowLighting(options.scene.shadowLighting ?? { enabled: false, ambient: 1, lights: [] });
     this.drops = new WindowDrops(this.width, this.height, this.parameters.seed);
     this.renderer = new WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'low-power', premultipliedAlpha: false });
     this.renderer.setPixelRatio(1);
@@ -127,7 +139,7 @@ export class AtmosphereEngine {
     texture.colorSpace = NoColorSpace; texture.needsUpdate = true;
     const size = texture.image as { width?: number; height?: number } | undefined;
     if (!size?.width || !size.height) throw new Error('Texture must have a loaded 2D image');
-    if (fullSize && (size.width !== this.width || size.height !== this.height)) throw new Error(`Mask must match scene ${this.width}×${this.height}; got ${size.width}×${size.height}`);
+    if (fullSize && (size.width !== this.width || size.height !== this.height)) throw new Error(`Mask must match scene ${this.width}Г—${this.height}; got ${size.width}Г—${size.height}`);
     return texture;
   }
 
@@ -166,9 +178,9 @@ export class AtmosphereEngine {
       const { width, height } = texture.image as { width: number; height: number };
       const x = layer.x ?? 0, y = layer.y ?? 0, opacity = layer.opacity ?? 1;
       if (!layer.placement && (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x + width > this.width || y + height > this.height)) throw new Error(`${layer.id}: native-size art must fit scene at integer coordinates`);
-      if (!Number.isFinite(opacity) || opacity < 0 || opacity > 1) throw new Error(`${layer.id}: opacity must be 0…1`);
+      if (!Number.isFinite(opacity) || opacity < 0 || opacity > 1) throw new Error(`${layer.id}: opacity must be 0вЂ¦1`);
       const extra: Record<string, IUniform> = {
-        uRainBlur: {value:0}, uImage: { value: texture }, uOrigin: { value: new Vector2(x, y) }, uSize: { value: new Vector2(width, height) },
+        uRainBlur:{value:0},uImage: { value: texture }, uOrigin: { value: new Vector2(x, y) }, uSize: { value: new Vector2(width, height) },
         uOpacity: { value: opacity }, uReceivesFlash: { value: layer.receivesLightning ? 1 : 0 },
         uTint: { value: new Vector3(...(layer.tint ?? [1, 1, 1])) },
         uTime: { value: 0 }, uHasCityMask: { value: layer.cityLightMask ? 1 : 0 },
@@ -192,7 +204,30 @@ export class AtmosphereEngine {
           uComputerCorners:{value:new Vector4(...(layer.roomLights.computerCorners??[layer.roomLights.computerRect?.[0]??0,layer.roomLights.computerRect?.[2]??0,layer.roomLights.computerRect?.[0]??0,layer.roomLights.computerRect?.[2]??0]))},uComputerOn:{value:0},uExteriorVisibility:{value:1}
         });
       }
-      const pass = this.pass(layer.id, layer.roomLights ? roomFragment : imageFragment, layer.depth, layer.scope === 'world', extra);
+      const receiver = layer.shadows && layer.shadows.receives !== false;
+      if (receiver) {
+        const mask = layer.shadows!.receiverMask ? await this.texture(layer.shadows!.receiverMask!) : this.windowTexture;
+        if (layer.shadows!.receiverMask) checkSameSize(mask);
+        Object.assign(extra, {
+          uShadowReceiver: { value: mask }, uReceiverMask: { value: layer.shadows!.receiverMask ? 1 : 0 },
+          uShadowEnabled: { value: 0 }, uShadowAmbient: { value: 1 }, uShadowTransmission: { value: 1 },
+          uReceiverElevation: { value: layer.shadows!.elevation }, uReceiverSelf: { value: -1 },
+          uCasterRect: { value: Array.from({ length: 4 }, () => new Vector4(0, 0, 1, 1)) },
+          uCasterInfo: { value: Array.from({ length: 4 }, () => new Vector4()) },
+          uShadowLight: { value: Array.from({ length: 4 }, () => new Vector4()) },
+          uShadowColor: { value: Array.from({ length: 4 }, () => new Vector4()) },
+          uShadowParams: { value: Array.from({ length: 4 }, () => new Vector4()) },
+          ...Object.fromEntries([0, 1, 2, 3].map(i => [`uCaster${i}`, { value: this.windowTexture }]))
+        });
+      }
+      const fragment = layer.roomLights ? roomFragment : imageFragment;
+      const pass = this.pass(layer.id, receiver ? withShadowLighting(fragment) : fragment, layer.depth, layer.scope === 'world', extra);
+      if (receiver) this.shadowReceivers.push({ pass, id: layer.id, scope: layer.scope });
+      if (layer.shadows?.casts) {
+        const mask = layer.shadows.casterMask ? await this.texture(layer.shadows.casterMask) : texture;
+        checkSameSize(mask);
+        this.shadowCasters.push({ id: layer.id, pass, texture: mask, elevation: layer.shadows.elevation, opacity: layer.shadows.opacity ?? 1, red: !!layer.shadows.casterMask, scope: layer.scope });
+      }
       this.imageLayers.set(layer.id, { pass, native: new Vector2(width, height) });
       if (layer.placement) this.placeLayer(layer.id, layer.placement);
     }
@@ -247,6 +282,42 @@ export class AtmosphereEngine {
   }
 
   getParameters(): AtmosphereParameters { return structuredClone(this.parameters); }
+  getShadowLighting(): ShadowLightingState { this.assertAlive(); return structuredClone(this.shadowLighting); }
+  setShadowLighting(state: ShadowLightingState): void {
+    this.assertAlive(); this.shadowLighting = resolveShadowLighting(state); this.renderAfterEdit();
+  }
+  exportShadowLighting(): string { return JSON.stringify(this.getShadowLighting()); }
+  importShadowLighting(json: string): void { this.setShadowLighting(JSON.parse(json)); }
+  private syncShadows(): void {
+    for (const receiver of this.shadowReceivers) {
+      const u = receiver.pass.uniforms;
+      u.uShadowEnabled.value = this.shadowLighting.enabled ? 1 : 0;
+      u.uShadowAmbient.value = this.shadowLighting.ambient;
+      u.uReceiverSelf.value = this.shadowCasters.findIndex(c => c.id === receiver.id);
+      for (let i = 0; i < 4; i++) {
+        const caster = this.shadowCasters[i];
+        u.uCasterInfo.value[i].set(0, 0, 0, 0);
+        if (caster) {
+          const origin = caster.pass.uniforms.uOrigin.value, size = caster.pass.uniforms.uSize.value;
+          u.uCasterRect.value[i].set(origin.x, origin.y, size.x, size.y);
+          u.uCasterInfo.value[i].set(caster.elevation, caster.opacity * caster.pass.uniforms.uOpacity.value, caster.red ? 1 : 0, caster.pass.userVisible && caster.scope === receiver.scope ? 1 : 0);
+          u[`uCaster${i}`].value = caster.texture;
+        }
+        const light = this.shadowLighting.lights[i];
+        u.uShadowColor.value[i].set(0, 0, 0, 0);
+        if (!light || light.enabled === false || (light.scope ?? 'world') !== receiver.scope || (light.type === 'directional' && light.elevationDeg <= 0)) continue;
+        u.uShadowColor.value[i].set(...light.color, light.intensity);
+        if (light.type === 'point') {
+          u.uShadowLight.value[i].set(light.x, light.y, light.elevation, 1);
+          u.uShadowParams.value[i].set(0, light.radius, light.softness ?? 0, 0);
+        } else {
+          const azimuth = light.azimuthDeg * Math.PI / 180;
+          u.uShadowLight.value[i].set(Math.cos(azimuth), Math.sin(azimuth), Math.tan(light.elevationDeg * Math.PI / 180), 0);
+          u.uShadowParams.value[i].set(0, 1, light.softness ?? 0, light.maxDistance ?? 4096);
+        }
+      }
+    }
+  }
   setParameters(patch: ParameterPatch): void {
     this.assertAlive();
     const next = resolveParameters(patch, this.parameters);
@@ -365,6 +436,7 @@ export class AtmosphereEngine {
 
   render(): void {
     this.assertAlive(); if (this.contextLost) return;
+    this.syncShadows();
     const p = this.parameters, colors = paletteAt(p.timeOfDay, p.sky.palette), flash = this.flash();
     for (const pass of this.passes) {
       pass.uniforms.uFlash.value = flash; pass.uniforms.uSteps.value = p.render.colorSteps; pass.uniforms.uSeed.value = p.seed;

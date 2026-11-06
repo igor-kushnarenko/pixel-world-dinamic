@@ -1,6 +1,6 @@
 {
   "name": "@pixel-world/atmosphere-engine",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "description": "Reusable pixel-perfect GPU atmosphere for layered pixel art scenes",
@@ -14,7 +14,8 @@
     "test:clouds": "node tests/cloud-stability.mjs",
     "test:atmosphere": "node tests/layer-atmosphere.mjs",
     "test:ui": "node tests/interface.mjs",
-    "prepack": "npm run build:engine"
+    "prepack": "npm run build:engine",
+    "package:starter": "python tools/package_starter.py"
   },
   "exports": {
     ".": {
@@ -24,12 +25,13 @@
   },
   "files": [
     "lib",
+    "src/engine",
+    "examples/panorama",
+    "docs",
     "README.md",
+    "CHANGELOG.md",
     "live_sky_instructions.md",
-    "docs/ATMOSPHERE_ENGINE.md",
-    "docs/API.md",
-    "docs/INTEGRATION.md",
-    "CHANGELOG.md"
+    "kits/apartment.zip"
   ],
   "dependencies": {
     "three": "0.181.1"

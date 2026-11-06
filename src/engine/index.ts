@@ -7,6 +7,16 @@ export type { WeatherKind } from './randomWeather';
 
 export {createSpriteMaterial,sampleSpriteLight,windowTransmission} from './spriteLighting';
 export type {SpriteLight,SpriteLightingState} from './spriteLighting';
-export const ATMOSPHERE_ENGINE_VERSION='0.3.0';
+export const ATMOSPHERE_ENGINE_VERSION='0.5.0';
+export { resolveShadowLighting, projectShadowSample } from './shadows';
+export type { LayerShadowGeometry, ShadowLight, DirectionalShadowLight, PointShadowLight, ShadowLightingState } from './shadows';
 export {resolveShutter} from './shutter';
 export type {ShutterDefinition,ShutterLight} from './types';
+
+export {PanoramaExperience} from './PanoramaExperience';
+export type {PanoramaExperienceOptions,PanoramaView} from './PanoramaExperience';
+export {WeatherTransition} from './WeatherTransition';
+export {LandscapeAudio} from './LandscapeAudio';
+export type {SoundscapeProfile,LandscapeSound} from './LandscapeAudio';
+export {SillPhysics,sillBounds,dragPosition,fallStep,restingPosition,SILL_BACK,SILL_FRONT} from './objectPhysics';
+export type {Body,SillGeometry} from './objectPhysics';
